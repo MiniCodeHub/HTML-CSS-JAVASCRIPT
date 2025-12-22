@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Typing Text Animation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.5rem;
+      background: #22d3ee;
+      margin-left: 4px;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0; }
+    }
+  </style>
+</head>
+<body class="bg-black flex items-center justify-center h-screen">
+
+  <h1 class="text-4xl md:text-6xl font-bold text-white">
+    I am a
+    <span id="text" class="text-cyan-400"></span>
+    <span class="cursor"></span>
+  </h1>
+
+  <script>
+    const words = ["Coder", "Developer", "Techie"];
+    let wordIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    const textElement = document.getElementById("text");
+
+    function typeEffect() {
+      const currentWord = words[wordIndex];
+
+      if (isDeleting) {
+        charIndex--;
+      } else {
+        charIndex++;
+      }
+
+      textElement.textContent = currentWord.substring(0, charIndex);
+
+      let speed = isDeleting ? 80 : 120;
+
+      if (!isDeleting && charIndex === currentWord.length) {
+        speed = 1000;
+        isDeleting = true;
+      } else if (isDeleting && charIndex === 0) {
+        isDeleting = false;
+        wordIndex = (wordIndex + 1) % words.length;
+        speed = 400;
+      }
+
+      setTimeout(typeEffect, speed);
+    }
+
+    typeEffect();
+  </script>
+
+</body>
+</html>
