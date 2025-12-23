@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Glassmorphism Auth UI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600">
+
+  <!-- Popup -->
+  <div id="popup"
+       class="fixed top-5 right-5 hidden px-5 py-3 rounded-xl bg-black/70 text-white
+              backdrop-blur-lg border border-white/30 shadow-xl">
+    Action Successful
+  </div>
+
+  <div class="w-80 p-8 rounded-2xl bg-white/20 backdrop-blur-lg shadow-2xl border border-white/30">
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-6 mb-6">
+      <button id="loginBtn"
+        class="tab-btn text-white font-semibold border-b-2 border-cyan-400 pb-1">
+        Login
+      </button>
+      <button id="signupBtn"
+        class="tab-btn text-white/70 font-semibold border-b-2 border-transparent pb-1">
+        Signup
+      </button>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="space-y-4">
+      <input required type="email" placeholder="Email"
+        class="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70
+               focus:outline-none focus:ring-2 focus:ring-cyan-400"/>
+
+      <input required type="password" placeholder="Password"
+        class="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70
+               focus:outline-none focus:ring-2 focus:ring-cyan-400"/>
+
+      <button type="submit"
+        class="w-full py-2 rounded-lg bg-cyan-400 text-black font-semibold
+               hover:bg-cyan-300 transition-all">
+        Login
+      </button>
+    </form>
+
+    <!-- Signup Form -->
+    <form id="signupForm" class="space-y-4 hidden">
+      <input required type="text" placeholder="Username"
+        class="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70
+               focus:outline-none focus:ring-2 focus:ring-cyan-400"/>
+
+      <input required type="email" placeholder="Email"
+        class="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70
+               focus:outline-none focus:ring-2 focus:ring-cyan-400"/>
+
+      <input required type="password" placeholder="Password"
+        class="w-full px-4 py-2 rounded-lg bg-white/30 text-white placeholder-white/70
+               focus:outline-none focus:ring-2 focus:ring-cyan-400"/>
+
+      <button type="submit"
+        class="w-full py-2 rounded-lg bg-cyan-400 text-black font-semibold
+               hover:bg-cyan-300 transition-all">
+        Sign Up
+      </button>
+    </form>
+
+  </div>
+
+  <script>
+    const loginBtn = document.getElementById("loginBtn");
+    const signupBtn = document.getElementById("signupBtn");
+    const loginForm = document.getElementById("loginForm");
+    const signupForm = document.getElementById("signupForm");
+    const popup = document.getElementById("popup");
+
+    function showPopup(msg) {
+      popup.textContent = msg;
+      popup.classList.remove("hidden");
+      setTimeout(() => popup.classList.add("hidden"), 2000);
+    }
+
+    function activateTab(activeBtn, inactiveBtn, showForm, hideForm) {
+      activeBtn.classList.add("border-cyan-400", "text-white");
+      activeBtn.classList.remove("border-transparent", "text-white/70");
+
+      inactiveBtn.classList.remove("border-cyan-400", "text-white");
+      inactiveBtn.classList.add("border-transparent", "text-white/70");
+
+      showForm.classList.remove("hidden");
+      hideForm.classList.add("hidden");
+    }
+
+    loginBtn.onclick = () => {
+      activateTab(loginBtn, signupBtn, loginForm, signupForm);
+      showPopup("Login tab opened");
+    };
+
+    signupBtn.onclick = () => {
+      activateTab(signupBtn, loginBtn, signupForm, loginForm);
+      showPopup("Signup tab opened");
+    };
+
+    loginForm.onsubmit = (e) => {
+      e.preventDefault();
+      showPopup("Logged in successfully 🎉");
+    };
+
+    signupForm.onsubmit = (e) => {
+      e.preventDefault();
+      showPopup("Account created successfully 🚀");
+    };
+  </script>
+
+</body>
+</html>
