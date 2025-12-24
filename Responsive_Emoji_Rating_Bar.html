@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Emoji Rating Bar</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-black">
+
+  <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-6 w-80 text-center">
+    <h2 class="text-white text-xl font-bold mb-4">Rate Your Experience</h2>
+
+    <!-- Emojis -->
+    <div id="emojiBar" class="flex justify-between text-4xl cursor-pointer">
+      <span class="emoji">😡</span>
+      <span class="emoji">😞</span>
+      <span class="emoji">😐</span>
+      <span class="emoji">😊</span>
+      <span class="emoji">😍</span>
+    </div>
+
+    <!-- Selected Text -->
+    <p id="result" class="mt-4 text-cyan-400 font-semibold opacity-0 transition-opacity duration-300">
+      You selected 😊
+    </p>
+  </div>
+
+  <script>
+    const emojis = document.querySelectorAll(".emoji");
+    const result = document.getElementById("result");
+
+    emojis.forEach(emoji => {
+      emoji.addEventListener("click", () => {
+        emojis.forEach(e => {
+          e.classList.remove("scale-150", "text-cyan-400");
+          e.classList.add("opacity-50");
+        });
+
+        emoji.classList.add("scale-150", "text-cyan-400");
+        emoji.classList.remove("opacity-50");
+
+        result.textContent = `You selected ${emoji.textContent}`;
+        result.classList.remove("opacity-0");
+      });
+    });
+  </script>
+
+</body>
+</html>
