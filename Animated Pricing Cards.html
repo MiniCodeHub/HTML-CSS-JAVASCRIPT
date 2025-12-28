@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Animated Pricing Cards</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-900 min-h-screen flex items-center justify-center text-white">
+
+  <div class="max-w-6xl w-full px-6">
+    <h1 class="text-3xl font-bold text-center mb-10">
+      💳 Pricing Plans
+    </h1>
+
+    <div class="grid md:grid-cols-3 gap-8">
+
+      <!-- Basic Plan -->
+      <div class="group relative rounded-xl p-[2px] bg-gradient-to-r from-cyan-500 to-purple-500">
+        <div class="rounded-xl bg-gray-800 p-6 text-center
+                    transform transition duration-300
+                    group-hover:scale-105 group-hover:shadow-2xl">
+          <h2 class="text-xl font-semibold mb-2">Basic</h2>
+          <p class="text-4xl font-bold mb-4">$9</p>
+          <ul class="text-gray-300 space-y-2 mb-6">
+            <li>✔ 5 Projects</li>
+            <li>✔ Basic Support</li>
+            <li>✔ Limited Access</li>
+          </ul>
+          <button class="w-full py-2 rounded-lg bg-cyan-500 hover:bg-cyan-600 transition">
+            Choose Plan
+          </button>
+        </div>
+      </div>
+
+      <!-- Popular Plan -->
+      <div class="group relative rounded-xl p-[2px] bg-gradient-to-r from-purple-500 to-pink-500 scale-105">
+        <span class="absolute -top-5 left-1/2 -translate-x-1/2
+                     bg-pink-500 text-xs font-bold px-3 py-1 rounded-full">
+          MOST POPULAR
+        </span>
+        <div class="rounded-xl bg-gray-800 p-6 text-center
+                    transform transition duration-300
+                    group-hover:scale-110 group-hover:shadow-2xl">
+          <h2 class="text-xl font-semibold mb-2">Pro</h2>
+          <p class="text-4xl font-bold mb-4">$19</p>
+          <ul class="text-gray-300 space-y-2 mb-6">
+            <li>✔ Unlimited Projects</li>
+            <li>✔ Priority Support</li>
+            <li>✔ Full Access</li>
+          </ul>
+          <button class="w-full py-2 rounded-lg bg-pink-500 hover:bg-pink-600 transition">
+            Choose Plan
+          </button>
+        </div>
+      </div>
+
+      <!-- Premium Plan -->
+      <div class="group relative rounded-xl p-[2px] bg-gradient-to-r from-purple-500 to-cyan-500">
+        <div class="rounded-xl bg-gray-800 p-6 text-center
+                    transform transition duration-300
+                    group-hover:scale-105 group-hover:shadow-2xl">
+          <h2 class="text-xl font-semibold mb-2">Premium</h2>
+          <p class="text-4xl font-bold mb-4">$29</p>
+          <ul class="text-gray-300 space-y-2 mb-6">
+            <li>✔ Everything in Pro</li>
+            <li>✔ 24/7 Support</li>
+            <li>✔ Custom Features</li>
+          </ul>
+          <button class="w-full py-2 rounded-lg bg-purple-500 hover:bg-purple-600 transition">
+            Choose Plan
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</body>
+</html>
