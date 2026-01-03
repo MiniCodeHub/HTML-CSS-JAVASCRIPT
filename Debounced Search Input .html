@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debounced Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 700px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px 50px 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999;
+            font-size: 20px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 140px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .results-count {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loading {
+            display: none;
+            color: #667eea;
+            font-size: 14px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+            animation: slideIn 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .result-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .highlight {
+            background: #fff59d;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .info-box strong {
+            color: #1976d2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debounced Search</h1>
+        <p class="subtitle">Type to search - notice how the search waits until you stop typing</p>
+
+        <div class="search-wrapper">
+            <input 
+                type="text" 
+                class="search-input" 
+                placeholder="Search for countries, cities, or regions..."
+                id="searchInput"
+                autocomplete="off"
+            >
+            <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-label">Keystrokes</div>
+                <div class="stat-value" id="keystrokeCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Searches Run</div>
+                <div class="stat-value" id="searchCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Searches Saved</div>
+                <div class="stat-value" id="savedCount">0</div>
+            </div>
+        </div>
+
+        <div class="results-header">
+            <span class="results-count" id="resultsCount">Start typing to search...</span>
+            <span class="loading" id="loadingIndicator">Searching...</span>
+        </div>
+
+        <div class="results" id="results"></div>
+
+        <div class="info-box">
+            <strong>How it works:</strong> Debouncing delays the search function until you stop typing for 500ms. This prevents unnecessary searches while you're still typing, improving performance and reducing server load.
+        </div>
+    </div>
+
+    <script>
+        // Fake data - countries and cities
+        const data = [
+            { title: "United States", description: "North American country known for its diverse landscapes and culture" },
+            { title: "United Kingdom", description: "Island nation in Western Europe, home to England, Scotland, Wales, and Northern Ireland" },
+            { title: "France", description: "European country famous for art, fashion, and gastronomy" },
+            { title: "Germany", description: "Central European country known for engineering and history" },
+            { title: "Japan", description: "East Asian island nation known for technology and tradition" },
+            { title: "Australia", description: "Oceanic country and continent with unique wildlife" },
+            { title: "Canada", description: "North American country known for natural beauty and multiculturalism" },
+            { title: "Italy", description: "Southern European country famous for art, architecture, and cuisine" },
+            { title: "Spain", description: "Southwestern European country known for culture and beaches" },
+            { title: "Brazil", description: "Largest South American country, home to the Amazon rainforest" },
+            { title: "India", description: "South Asian country with ancient history and diverse cultures" },
+            { title: "China", description: "East Asian country with world's largest population and rich history" },
+            { title: "Mexico", description: "North American country known for ancient ruins and vibrant culture" },
+            { title: "Russia", description: "Largest country in the world spanning Europe and Asia" },
+            { title: "South Africa", description: "Southern African country known for wildlife and diversity" },
+            { title: "Argentina", description: "South American country famous for tango and beef" },
+            { title: "New York", description: "Major US city known as the financial capital of the world" },
+            { title: "London", description: "Capital of the UK, global center of finance and culture" },
+            { title: "Paris", description: "Capital of France, the City of Light" },
+            { title: "Tokyo", description: "Capital of Japan, massive metropolitan area blending tradition and innovation" },
+            { title: "Sydney", description: "Major Australian city famous for its Opera House and harbor" },
+            { title: "Dubai", description: "UAE city known for modern architecture and luxury" },
+            { title: "Singapore", description: "Southeast Asian city-state known for cleanliness and efficiency" },
+            { title: "Amsterdam", description: "Dutch capital famous for canals and cycling culture" },
+            { title: "Barcelona", description: "Spanish city known for Gaudí architecture and beaches" },
+            { title: "Rome", description: "Italian capital with ancient ruins and Renaissance art" }
+        ];
+
+        // Statistics tracking
+        let keystrokeCount = 0;
+        let searchCount = 0;
+        let savedCount = 0;
+        let debounceTimer;
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const results = document.getElementById('results');
+        const keystrokeCountEl = document.getElementById('keystrokeCount');
+        const searchCountEl = document.getElementById('searchCount');
+        const savedCountEl = document.getElementById('savedCount');
+        const resultsCountEl = document.getElementById('resultsCount');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+
+        // Debounce function
+        function debounce(func, delay) {
+            return function(...args) {
+                // Clear existing timer
+                if (debounceTimer) {
+                    clearTimeout(debounceTimer);
+                    savedCount++;
+                    savedCountEl.textContent = savedCount;
+                }
+                
+                // Set new timer
+                debounceTimer = setTimeout(() => {
+                    func.apply(this, args);
+                }, delay);
+            };
+        }
+
+        // Search function
+        function performSearch(query) {
+            // Show loading
+            loadingIndicator.classList.add('active');
+            
+            // Simulate network delay
+            setTimeout(() => {
+                searchCount++;
+                searchCountEl.textContent = searchCount;
+                
+                if (!query.trim()) {
+                    results.innerHTML = '';
+                    resultsCountEl.textContent = 'Start typing to search...';
+                    loadingIndicator.classList.remove('active');
+                    return;
+                }
+
+                // Filter data
+                const filtered = data.filter(item => 
+                    item.title.toLowerCase().includes(query.toLowerCase()) ||
+                    item.description.toLowerCase().includes(query.toLowerCase())
+                );
+
+                // Display results
+                displayResults(filtered, query);
+                loadingIndicator.classList.remove('active');
+            }, 300); // Simulate API delay
+        }
+
+        // Display results function
+        function displayResults(items, query) {
+            if (items.length === 0) {
+                results.innerHTML = `
+                    <div class="no-results">
+                        <div class="no-results-icon">🔍</div>
+                        <div>No results found for "${query}"</div>
+                    </div>
+                `;
+                resultsCountEl.textContent = 'No results';
+                return;
+            }
+
+            resultsCountEl.textContent = `Found ${items.length} result${items.length !== 1 ? 's' : ''}`;
+            
+            results.innerHTML = items.map(item => {
+                const highlightedTitle = highlightText(item.title, query);
+                const highlightedDesc = highlightText(item.description, query);
+                
+                return `
+                    <div class="result-item">
+                        <div class="result-title">${highlightedTitle}</div>
+                        <div class="result-description">${highlightedDesc}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Highlight matching text
+        function highlightText(text, query) {
+            if (!query.trim()) return text;
+            
+            const regex = new RegExp(`(${query})`, 'gi');
+            return text.replace(regex, '<span class="highlight">$1</span>');
+        }
+
+        // Create debounced search function
+        const debouncedSearch = debounce(performSearch, 500);
+
+        // Event listener
+        searchInput.addEventListener('input', (e) => {
+            keystrokeCount++;
+            keystrokeCountEl.textContent = keystrokeCount;
+            debouncedSearch(e.target.value);
+        });
+    </script>
+</body>
+</html>
