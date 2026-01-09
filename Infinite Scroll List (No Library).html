@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Infinite Scroll List</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .stats {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .list-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .item {
+      padding: 20px 24px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: background 0.2s;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .item:hover {
+      background: #f9fafb;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .item-content {
+      flex: 1;
+    }
+
+    .item-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .item-description {
+      color: #6b7280;
+      font-size: 0.9rem;
+      line-height: 1.4;
+    }
+
+    .item-meta {
+      color: #9ca3af;
+      font-size: 0.85rem;
+      text-align: right;
+    }
+
+    .loading {
+      padding: 30px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .end-message {
+      padding: 40px;
+      text-align: center;
+      color: #6b7280;
+      font-size: 1rem;
+      background: #f9fafb;
+    }
+
+    .end-message::before {
+      content: "🎉";
+      display: block;
+      font-size: 2rem;
+      margin-bottom: 12px;
+    }
+
+    .scroll-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      transition: width 0.1s;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div class="scroll-progress" id="scrollProgress"></div>
+  
+  <div class="container">
+    <header>
+      <h1>♾️ Infinite Scroll</h1>
+      <div class="stats">
+        Loaded: <span id="loadedCount">0</span> items
+      </div>
+    </header>
+
+    <div class="list-container" id="listContainer">
+      <!-- Items will be inserted here -->
+    </div>
+
+    <div class="loading" id="loading" style="display: none;">
+      <div class="spinner"></div>
+      <div>Loading more items...</div>
+    </div>
+
+    <div class="end-message" id="endMessage" style="display: none;">
+      You've reached the end!
+    </div>
+  </div>
+
+  <script>
+    // State management
+    const state = {
+      currentPage: 0,
+      itemsPerPage: 15,
+      totalItems: 100,
+      loading: false,
+      hasMore: true,
+      loadedItems: []
+    };
+
+    // DOM elements
+    const listContainer = document.getElementById('listContainer');
+    const loadingEl = document.getElementById('loading');
+    const endMessageEl = document.getElementById('endMessage');
+    const loadedCountEl = document.getElementById('loadedCount');
+    const scrollProgressEl = document.getElementById('scrollProgress');
+
+    // Generate fake data
+    function generateItems(page, count) {
+      const items = [];
+      const start = page * count;
+      
+      const categories = ['Technology', 'Science', 'Art', 'Music', 'Sports', 'Travel'];
+      const adjectives = ['Amazing', 'Incredible', 'Fantastic', 'Wonderful', 'Brilliant', 'Awesome'];
+      
+      for (let i = 0; i < count; i++) {
+        const id = start + i + 1;
+        const category = categories[id % categories.length];
+        const adjective = adjectives[id % adjectives.length];
+        
+        items.push({
+          id,
+          title: `${adjective} ${category} Item #${id}`,
+          description: `This is a description for item ${id}. It contains interesting information about ${category.toLowerCase()}.`,
+          time: `${Math.floor(Math.random() * 24)}h ago`,
+          initial: category[0]
+        });
+      }
+      
+      return items;
+    }
+
+    // Create DOM element for item
+    function createItemElement(item) {
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <div class="avatar">${item.initial}</div>
+        <div class="item-content">
+          <div class="item-title">${item.title}</div>
+          <div class="item-description">${item.description}</div>
+        </div>
+        <div class="item-meta">${item.time}</div>
+      `;
+      return div;
+    }
+
+    // Load more items
+    async function loadMore() {
+      if (state.loading || !state.hasMore) return;
+      
+      state.loading = true;
+      loadingEl.style.display = 'block';
+
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+
+      const itemsToLoad = Math.min(
+        state.itemsPerPage,
+        state.totalItems - state.loadedItems.length
+      );
+
+      if (itemsToLoad > 0) {
+        const newItems = generateItems(state.currentPage, itemsToLoad);
+        
+        // Add items to DOM
+        const fragment = document.createDocumentFragment();
+        newItems.forEach(item => {
+          fragment.appendChild(createItemElement(item));
+        });
+        listContainer.appendChild(fragment);
+
+        // Update state
+        state.loadedItems.push(...newItems);
+        state.currentPage++;
+        loadedCountEl.textContent = state.loadedItems.length;
+      }
+
+      // Check if we have more items
+      if (state.loadedItems.length >= state.totalItems) {
+        state.hasMore = false;
+        endMessageEl.style.display = 'block';
+      }
+
+      loadingEl.style.display = 'none';
+      state.loading = false;
+    }
+
+    // Check if user scrolled near bottom
+    function checkScroll() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      const windowHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      
+      // Update scroll progress bar
+      const scrollPercent = (scrollTop / (documentHeight - windowHeight)) * 100;
+      scrollProgressEl.style.width = scrollPercent + '%';
+
+      // Load more when 300px from bottom
+      const distanceFromBottom = documentHeight - (scrollTop + windowHeight);
+      
+      if (distanceFromBottom < 300 && !state.loading && state.hasMore) {
+        loadMore();
+      }
+    }
+
+    // Throttle scroll events for performance
+    let scrollTimeout;
+    function throttledScroll() {
+      if (scrollTimeout) return;
+      
+      scrollTimeout = setTimeout(() => {
+        checkScroll();
+        scrollTimeout = null;
+      }, 100);
+    }
+
+    // Event listeners
+    window.addEventListener('scroll', throttledScroll);
+
+    // Initial load
+    loadMore();
+  </script>
+</body>
+</html>
