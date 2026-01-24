@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Background Color Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background-color 0.5s ease;
+            background-color: #3498db;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 50px 60px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .emoji {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .color-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #34495e;
+            margin: 30px 0;
+            padding: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 45px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.5);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        .info {
+            margin-top: 25px;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🎨</div>
+        <h1>Color Generator</h1>
+        <div class="color-display" id="colorCode">#3498db</div>
+        <button id="generateBtn">Generate Color</button>
+        <p class="info">Click the button to generate a random color!</p>
+    </div>
+
+    <script>
+        const body = document.body;
+        const colorCode = document.getElementById('colorCode');
+        const generateBtn = document.getElementById('generateBtn');
+
+        function getRandomColor() {
+            // Generate random values for R, G, B (0-255)
+            const r = Math.floor(Math.random() * 256);
+            const g = Math.floor(Math.random() * 256);
+            const b = Math.floor(Math.random() * 256);
+            
+            // Convert to hex format
+            const hex = '#' + 
+                r.toString(16).padStart(2, '0') + 
+                g.toString(16).padStart(2, '0') + 
+                b.toString(16).padStart(2, '0');
+            
+            return hex;
+        }
+
+        function changeColor() {
+            const newColor = getRandomColor();
+            body.style.backgroundColor = newColor;
+            colorCode.textContent = newColor.toUpperCase();
+        }
+
+        // Add click event listener
+        generateBtn.addEventListener('click', changeColor);
+
+        // Optional: Generate color on spacebar press
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                changeColor();
+            }
+        });
+    </script>
+</body>
+</html>
