@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag & Drop Task Board 🧲</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .column {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 3px solid;
+        }
+
+        .column-header h2 {
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-count {
+            background: rgba(0, 0, 0, 0.1);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            font-weight: normal;
+        }
+
+        .todo .column-header {
+            border-color: #3b82f6;
+        }
+
+        .todo h2 {
+            color: #3b82f6;
+        }
+
+        .in-progress .column-header {
+            border-color: #f59e0b;
+        }
+
+        .in-progress h2 {
+            color: #f59e0b;
+        }
+
+        .done .column-header {
+            border-color: #10b981;
+        }
+
+        .done h2 {
+            color: #10b981;
+        }
+
+        .task-list {
+            min-height: 300px;
+            transition: background-color 0.2s;
+        }
+
+        .task-list.drag-over {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+        }
+
+        .task {
+            background: white;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            cursor: grab;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s;
+            border-left: 4px solid #ddd;
+        }
+
+        .task:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .task.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+            transform: rotate(5deg);
+        }
+
+        .task h3 {
+            font-size: 1em;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .task p {
+            font-size: 0.85em;
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .task.priority-high {
+            border-left-color: #ef4444;
+        }
+
+        .task.priority-medium {
+            border-left-color: #f59e0b;
+        }
+
+        .task.priority-low {
+            border-left-color: #10b981;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .priority-high .priority-badge {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .priority-medium .priority-badge {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .priority-low .priority-badge {
+            background: #d1fae5;
+            color: #10b981;
+        }
+
+        .add-task-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.05);
+            border: 2px dashed rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            color: #6b7280;
+            transition: all 0.2s;
+        }
+
+        .add-task-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .stats {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .stat-item h3 {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .stat-item p {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        @media (max-width: 768px) {
+            .board {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧲 Task Board</h1>
+        
+        <div class="board">
+            <div class="column todo">
+                <div class="column-header">
+                    <h2>
+                        📋 To Do
+                        <span class="task-count" id="todo-count">0</span>
+                    </h2>
+                </div>
+                <div class="task-list" id="todo" data-column="todo"></div>
+                <button class="add-task-btn" onclick="addSampleTask('todo')">+ Add Task</button>
+            </div>
+
+            <div class="column in-progress">
+                <div class="column-header">
+                    <h2>
+                        ⚡ In Progress
+                        <span class="task-count" id="in-progress-count">0</span>
+                    </h2>
+                </div>
+                <div class="task-list" id="in-progress" data-column="in-progress"></div>
+                <button class="add-task-btn" onclick="addSampleTask('in-progress')">+ Add Task</button>
+            </div>
+
+            <div class="column done">
+                <div class="column-header">
+                    <h2>
+                        ✅ Done
+                        <span class="task-count" id="done-count">0</span>
+                    </h2>
+                </div>
+                <div class="task-list" id="done" data-column="done"></div>
+                <button class="add-task-btn" onclick="addSampleTask('done')">+ Add Task</button>
+            </div>
+        </div>
+
+        <div class="stats">
+            <div class="stat-item">
+                <h3>Total Tasks</h3>
+                <p id="total-tasks">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Completed</h3>
+                <p id="completed-tasks">0</p>
+            </div>
+            <div class="stat-item">
+                <h3>Completion Rate</h3>
+                <p id="completion-rate">0%</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Task state management
+        let taskIdCounter = 0;
+        const tasks = {
+            'todo': [],
+            'in-progress': [],
+            'done': []
+        };
+
+        // Sample task templates
+        const sampleTasks = [
+            { title: "Design new landing page", description: "Create mockups for the homepage redesign", priority: "high" },
+            { title: "Write documentation", description: "Update API documentation with new endpoints", priority: "medium" },
+            { title: "Fix bug in login form", description: "Users can't reset password", priority: "high" },
+            { title: "Code review", description: "Review pull requests from team members", priority: "medium" },
+            { title: "Team meeting", description: "Weekly sync at 2 PM", priority: "low" },
+            { title: "Update dependencies", description: "Upgrade to latest framework versions", priority: "low" },
+            { title: "Database optimization", description: "Improve query performance", priority: "medium" },
+            { title: "User testing", description: "Conduct usability tests with 5 users", priority: "high" }
+        ];
+
+        // Initialize with some tasks
+        function initializeTasks() {
+            addTask('todo', "Design new landing page", "Create mockups for the homepage redesign", "high");
+            addTask('todo', "Write documentation", "Update API documentation with new endpoints", "medium");
+            addTask('in-progress', "Fix bug in login form", "Users can't reset password", "high");
+            addTask('done', "Team meeting", "Weekly sync completed", "low");
+            updateAllStats();
+        }
+
+        // Create a new task
+        function addTask(column, title, description, priority) {
+            const taskId = `task-${taskIdCounter++}`;
+            const task = { id: taskId, title, description, priority, column };
+            tasks[column].push(task);
+
+            const taskElement = createTaskElement(task);
+            document.getElementById(column).appendChild(taskElement);
+            
+            return taskElement;
+        }
+
+        // Create task DOM element
+        function createTaskElement(task) {
+            const taskDiv = document.createElement('div');
+            taskDiv.className = `task priority-${task.priority}`;
+            taskDiv.id = task.id;
+            taskDiv.draggable = true;
+            
+            taskDiv.innerHTML = `
+                <h3>${task.title}</h3>
+                <p>${task.description}</p>
+                <span class="priority-badge">${task.priority.toUpperCase()}</span>
+            `;
+
+            // Add drag event listeners
+            taskDiv.addEventListener('dragstart', handleDragStart);
+            taskDiv.addEventListener('dragend', handleDragEnd);
+
+            return taskDiv;
+        }
+
+        // Add a random sample task
+        function addSampleTask(column) {
+            const randomTask = sampleTasks[Math.floor(Math.random() * sampleTasks.length)];
+            const priorities = ['low', 'medium', 'high'];
+            const randomPriority = priorities[Math.floor(Math.random() * priorities.length)];
+            
+            addTask(column, randomTask.title, randomTask.description, randomPriority);
+            updateAllStats();
+        }
+
+        // Drag and drop handlers
+        let draggedElement = null;
+        let sourceColumn = null;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            sourceColumn = this.parentElement.dataset.column;
+            
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            
+            // Remove drag-over class from all columns
+            document.querySelectorAll('.task-list').forEach(list => {
+                list.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            const targetColumn = this.dataset.column;
+
+            if (draggedElement && sourceColumn !== targetColumn) {
+                // Update state
+                const taskId = draggedElement.id;
+                const taskIndex = tasks[sourceColumn].findIndex(t => t.id === taskId);
+                const task = tasks[sourceColumn][taskIndex];
+                
+                // Remove from source
+                tasks[sourceColumn].splice(taskIndex, 1);
+                
+                // Add to target
+                task.column = targetColumn;
+                tasks[targetColumn].push(task);
+
+                // Move DOM element
+                this.appendChild(draggedElement);
+
+                // Update stats
+                updateAllStats();
+            }
+
+            this.classList.remove('drag-over');
+            return false;
+        }
+
+        // Update all statistics
+        function updateAllStats() {
+            // Update column counts
+            document.getElementById('todo-count').textContent = tasks['todo'].length;
+            document.getElementById('in-progress-count').textContent = tasks['in-progress'].length;
+            document.getElementById('done-count').textContent = tasks['done'].length;
+
+            // Update overall stats
+            const total = tasks['todo'].length + tasks['in-progress'].length + tasks['done'].length;
+            const completed = tasks['done'].length;
+            const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('total-tasks').textContent = total;
+            document.getElementById('completed-tasks').textContent = completed;
+            document.getElementById('completion-rate').textContent = completionRate + '%';
+        }
+
+        // Set up drag and drop event listeners for all columns
+        function setupDragAndDrop() {
+            const taskLists = document.querySelectorAll('.task-list');
+            
+            taskLists.forEach(list => {
+                list.addEventListener('dragover', handleDragOver);
+                list.addEventListener('dragenter', handleDragEnter);
+                list.addEventListener('dragleave', handleDragLeave);
+                list.addEventListener('drop', handleDrop);
+            });
+        }
+
+        // Initialize the board
+        document.addEventListener('DOMContentLoaded', () => {
+            setupDragAndDrop();
+            initializeTasks();
+        });
+    </script>
+</body>
+</html>
