@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Button Click Counter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 60px 80px;
+            border-radius: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .counter-display {
+            font-size: 5rem;
+            font-weight: bold;
+            color: #fff;
+            margin: 30px 0;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .counter-display.pulse {
+            animation: pulse 0.3s ease;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:active::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .increment-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .increment-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .increment-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .reset-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .reset-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.4);
+        }
+
+        .reset-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: float 1s ease-out forwards;
+        }
+
+        @keyframes float {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(0);
+            }
+        }
+
+        .stats {
+            margin-top: 30px;
+            color: white;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .stats p {
+            margin: 5px 0;
+        }
+
+        .label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    
+    <div class="container">
+        <h1>🎯 Click Counter</h1>
+        <p class="label">Total Clicks</p>
+        <div class="counter-display" id="counter">0</div>
+        
+        <div class="button-group">
+            <button class="increment-btn" id="incrementBtn">
+                Click Me! 🚀
+            </button>
+            <button class="reset-btn" id="resetBtn">
+                Reset 🔄
+            </button>
+        </div>
+
+        <div class="stats">
+            <p>Highest Count: <span id="highScore">0</span></p>
+            <p>Session Clicks: <span id="sessionClicks">0</span></p>
+        </div>
+    </div>
+
+    <script>
+        let count = 0;
+        let highScore = localStorage.getItem('highScore') || 0;
+        let sessionClicks = 0;
+
+        const counter = document.getElementById('counter');
+        const incrementBtn = document.getElementById('incrementBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const highScoreDisplay = document.getElementById('highScore');
+        const sessionClicksDisplay = document.getElementById('sessionClicks');
+        const particlesContainer = document.getElementById('particles');
+
+        // Initialize high score display
+        highScoreDisplay.textContent = highScore;
+
+        // Create particle effect
+        function createParticles(x, y) {
+            for (let i = 0; i < 8; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                const angle = (Math.PI * 2 * i) / 8;
+                const velocity = 50 + Math.random() * 50;
+                const tx = Math.cos(angle) * velocity;
+                const ty = Math.sin(angle) * velocity;
+                
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                
+                particlesContainer.appendChild(particle);
+                
+                setTimeout(() => particle.remove(), 1000);
+            }
+        }
+
+        // Increment counter
+        incrementBtn.addEventListener('click', (e) => {
+            count++;
+            sessionClicks++;
+            counter.textContent = count;
+            sessionClicksDisplay.textContent = sessionClicks;
+            
+            // Add pulse animation
+            counter.classList.remove('pulse');
+            void counter.offsetWidth; // Trigger reflow
+            counter.classList.add('pulse');
+            
+            // Create particle effect
+            const rect = incrementBtn.getBoundingClientRect();
+            createParticles(
+                rect.left + rect.width / 2,
+                rect.top + rect.height / 2
+            );
+            
+            // Update high score
+            if (count > highScore) {
+                highScore = count;
+                highScoreDisplay.textContent = highScore;
+                localStorage.setItem('highScore', highScore);
+            }
+        });
+
+        // Reset counter
+        resetBtn.addEventListener('click', () => {
+            count = 0;
+            counter.textContent = count;
+            
+            // Add shake animation
+            counter.style.animation = 'none';
+            setTimeout(() => {
+                counter.style.animation = '';
+            }, 10);
+        });
+
+        // Remove pulse class after animation
+        counter.addEventListener('animationend', () => {
+            counter.classList.remove('pulse');
+        });
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                incrementBtn.click();
+            } else if (e.code === 'KeyR') {
+                resetBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
