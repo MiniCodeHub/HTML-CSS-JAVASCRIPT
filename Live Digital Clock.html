@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Clock</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .clock-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 60px 80px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+        }
+
+        .time-display {
+            font-size: 80px;
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: 4px;
+            margin-bottom: 20px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .date-display {
+            font-size: 24px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 30px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .toggle-label {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 70px;
+            height: 34px;
+            background-color: rgba(255, 255, 255, 0.3);
+            border-radius: 34px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: 2px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .toggle-switch:hover {
+            background-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 26px;
+            height: 26px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch.active {
+            background-color: rgba(102, 126, 234, 0.6);
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(36px);
+        }
+
+        .format-text {
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            min-width: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .clock-container {
+                padding: 40px 50px;
+            }
+
+            .time-display {
+                font-size: 60px;
+            }
+
+            .date-display {
+                font-size: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .clock-container {
+                padding: 30px 30px;
+            }
+
+            .time-display {
+                font-size: 48px;
+                letter-spacing: 2px;
+            }
+
+            .date-display {
+                font-size: 16px;
+            }
+
+            .toggle-label {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="clock-container">
+        <div class="time-display" id="time">00:00:00</div>
+        <div class="date-display" id="date">Loading...</div>
+        <div class="toggle-container">
+            <span class="format-text" id="formatText">12h</span>
+            <div class="toggle-switch" id="toggleSwitch">
+                <div class="toggle-slider"></div>
+            </div>
+            <span class="toggle-label">24-Hour Format</span>
+        </div>
+    </div>
+
+    <script>
+        let is24Hour = false;
+        const timeDisplay = document.getElementById('time');
+        const dateDisplay = document.getElementById('date');
+        const toggleSwitch = document.getElementById('toggleSwitch');
+        const formatText = document.getElementById('formatText');
+
+        function updateClock() {
+            const now = new Date();
+            
+            // Update time
+            let hours = now.getHours();
+            let minutes = now.getMinutes();
+            let seconds = now.getSeconds();
+            let period = '';
+
+            if (!is24Hour) {
+                period = hours >= 12 ? ' PM' : ' AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12; // Convert 0 to 12
+            }
+
+            // Add leading zeros
+            const hoursStr = String(hours).padStart(2, '0');
+            const minutesStr = String(minutes).padStart(2, '0');
+            const secondsStr = String(seconds).padStart(2, '0');
+
+            timeDisplay.textContent = `${hoursStr}:${minutesStr}:${secondsStr}${period}`;
+
+            // Update date (only once per minute to save resources)
+            if (seconds === 0 || dateDisplay.textContent === 'Loading...') {
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                };
+                dateDisplay.textContent = now.toLocaleDateString('en-US', options);
+            }
+        }
+
+        function toggleFormat() {
+            is24Hour = !is24Hour;
+            toggleSwitch.classList.toggle('active');
+            formatText.textContent = is24Hour ? '24h' : '12h';
+            updateClock(); // Immediate update
+        }
+
+        // Event listener for toggle switch
+        toggleSwitch.addEventListener('click', toggleFormat);
+
+        // Initialize and start clock
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
