@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Click to Copy Text</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #0f172a;
+    }
+
+    .card {
+      background-color: #111827;
+      padding: 24px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 360px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    .text-box {
+      background-color: #020617;
+      padding: 12px;
+      border-radius: 8px;
+      color: #cbd5f5;
+      word-break: break-all;
+      margin-bottom: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background-color: #2563eb;
+      color: #ffffff;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #1d4ed8;
+    }
+
+    button.copied {
+      background-color: #16a34a;
+    }
+
+    .hint {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="title">Click to Copy Text</div>
+
+    <div id="text" class="text-box">
+      https://minicodehub.dev
+    </div>
+
+    <button id="copyBtn">Copy Text</button>
+
+    <div class="hint">
+      Uses Clipboard API with UI feedback
+    </div>
+  </div>
+
+  <script>
+    const copyBtn = document.getElementById('copyBtn');
+    const text = document.getElementById('text').innerText;
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.innerText = 'Copied';
+        copyBtn.classList.add('copied');
+
+        setTimeout(() => {
+          copyBtn.innerText = 'Copy Text';
+          copyBtn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  </script>
+</body>
+</html>
