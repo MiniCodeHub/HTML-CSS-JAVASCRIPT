@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Popup with Overlay</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .open-modal-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 16px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .open-modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .open-modal-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Overlay */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+        }
+
+        /* Modal */
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.7);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f0f0f0;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.2s ease;
+            color: #666;
+        }
+
+        .close-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+            transform: rotate(90deg);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .modal-body {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            color: #667eea;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .hint.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="open-modal-btn" id="openModalBtn">Open Modal</button>
+    </div>
+
+    <!-- Modal Overlay -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <button class="close-btn" id="closeBtn">&times;</button>
+            
+            <div class="modal-header">
+                <h2>🎉 Welcome!</h2>
+            </div>
+            
+            <div class="modal-body">
+                <p>This is a beautiful modal popup with multiple ways to close it:</p>
+                <ul style="text-align: left; margin-top: 15px; padding-left: 20px;">
+                    <li>Click the × button</li>
+                    <li>Click outside the modal (on the overlay)</li>
+                    <li>Press the ESC key on your keyboard</li>
+                </ul>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="hint" id="hint">Press ESC to close</div>
+
+    <script>
+        // Get elements
+        const openModalBtn = document.getElementById('openModalBtn');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modal = document.getElementById('modal');
+        const closeBtn = document.getElementById('closeBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const hint = document.getElementById('hint');
+
+        // Open modal
+        function openModal() {
+            modalOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            
+            // Show hint after a delay
+            setTimeout(() => {
+                hint.classList.add('show');
+            }, 500);
+        }
+
+        // Close modal
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = ''; // Restore scrolling
+            hint.classList.remove('show');
+        }
+
+        // Event listeners
+        openModalBtn.addEventListener('click', openModal);
+
+        // Close button
+        closeBtn.addEventListener('click', closeModal);
+
+        // Cancel button
+        cancelBtn.addEventListener('click', closeModal);
+
+        // Confirm button (you can add custom logic here)
+        confirmBtn.addEventListener('click', () => {
+            alert('Confirmed!');
+            closeModal();
+        });
+
+        // Click outside modal (on overlay)
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closeModal();
+            }
+        });
+
+        // ESC key to close
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+                closeModal();
+            }
+        });
+
+        // Prevent clicks inside modal from closing it
+        modal.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    </script>
+</body>
+</html>
