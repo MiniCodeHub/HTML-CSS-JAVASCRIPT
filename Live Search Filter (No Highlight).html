@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Search Filter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px 15px 50px;
+            font-size: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-box input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+        }
+
+        .results-info {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+            min-height: 20px;
+        }
+
+        .items-list {
+            list-style: none;
+        }
+
+        .item {
+            background: #f8f9fa;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+
+        .item:hover {
+            background: #e9ecef;
+            border-left-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .item.hidden {
+            display: none;
+        }
+
+        .item-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .item-content {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 16px;
+        }
+
+        .item-description {
+            color: #666;
+            font-size: 13px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .no-results-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .no-results.hidden {
+            display: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .item {
+            animation: fadeIn 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Live Search Filter</h1>
+        <p class="subtitle">Search through programming languages</p>
+        
+        <div class="search-box">
+            <input 
+                type="text" 
+                id="searchInput" 
+                placeholder="Type to search..."
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="results-info" id="resultsInfo"></div>
+
+        <ul class="items-list" id="itemsList"></ul>
+
+        <div class="no-results hidden" id="noResults">
+            <div class="no-results-icon">🔍</div>
+            <p>No results found</p>
+        </div>
+    </div>
+
+    <script>
+        // Sample data - array of programming languages
+        const items = [
+            { 
+                name: "JavaScript", 
+                description: "Dynamic programming language for web development",
+                icon: "💛"
+            },
+            { 
+                name: "Python", 
+                description: "High-level language for general-purpose programming",
+                icon: "🐍"
+            },
+            { 
+                name: "Java", 
+                description: "Object-oriented language for enterprise applications",
+                icon: "☕"
+            },
+            { 
+                name: "TypeScript", 
+                description: "Typed superset of JavaScript",
+                icon: "💙"
+            },
+            { 
+                name: "C++", 
+                description: "High-performance systems programming language",
+                icon: "⚡"
+            },
+            { 
+                name: "Ruby", 
+                description: "Dynamic language focused on simplicity",
+                icon: "💎"
+            },
+            { 
+                name: "PHP", 
+                description: "Server-side scripting language for web",
+                icon: "🐘"
+            },
+            { 
+                name: "Swift", 
+                description: "Apple's language for iOS and macOS development",
+                icon: "🍎"
+            },
+            { 
+                name: "Go", 
+                description: "Google's language for concurrent programming",
+                icon: "🔷"
+            },
+            { 
+                name: "Rust", 
+                description: "Memory-safe systems programming language",
+                icon: "🦀"
+            },
+            { 
+                name: "Kotlin", 
+                description: "Modern language for Android development",
+                icon: "🤖"
+            },
+            { 
+                name: "C#", 
+                description: "Microsoft's object-oriented programming language",
+                icon: "🎯"
+            }
+        ];
+
+        // Get DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const itemsList = document.getElementById('itemsList');
+        const resultsInfo = document.getElementById('resultsInfo');
+        const noResults = document.getElementById('noResults');
+
+        // Render all items initially
+        function renderItems(itemsToRender) {
+            itemsList.innerHTML = '';
+            
+            if (itemsToRender.length === 0) {
+                noResults.classList.remove('hidden');
+                resultsInfo.textContent = '';
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            
+            itemsToRender.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'item';
+                li.innerHTML = `
+                    <div class="item-icon">${item.icon}</div>
+                    <div class="item-content">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-description">${item.description}</div>
+                    </div>
+                `;
+                itemsList.appendChild(li);
+            });
+
+            // Update results count
+            const total = items.length;
+            const showing = itemsToRender.length;
+            
+            if (showing === total) {
+                resultsInfo.textContent = `Showing all ${total} languages`;
+            } else {
+                resultsInfo.textContent = `Found ${showing} of ${total} languages`;
+            }
+        }
+
+        // Filter function
+        function filterItems(searchTerm) {
+            // Convert search term to lowercase for case-insensitive search
+            const searchLower = searchTerm.toLowerCase().trim();
+            
+            // If search is empty, return all items
+            if (searchLower === '') {
+                return items;
+            }
+            
+            // Filter items based on search term
+            // Search in both name and description
+            const filtered = items.filter(item => {
+                const nameMatch = item.name.toLowerCase().includes(searchLower);
+                const descMatch = item.description.toLowerCase().includes(searchLower);
+                return nameMatch || descMatch;
+            });
+            
+            return filtered;
+        }
+
+        // Event listener for input events
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value;
+            const filteredItems = filterItems(searchTerm);
+            renderItems(filteredItems);
+        });
+
+        // Initial render
+        renderItems(items);
+    </script>
+</body>
+</html>
