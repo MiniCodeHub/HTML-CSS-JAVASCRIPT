@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scroll to Top Button</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            background: white;
+            padding: 60px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .content-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        p {
+            margin-bottom: 15px;
+            color: #555;
+            text-align: justify;
+        }
+
+        .scroll-indicator {
+            text-align: center;
+            color: white;
+            font-size: 1.2em;
+            margin: 40px 0;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-10px);
+            }
+            60% {
+                transform: translateY(-5px);
+            }
+        }
+
+        /* Scroll to Top Button */
+        #scrollToTop {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 55px;
+            height: 55px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(0.8);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        #scrollToTop.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        #scrollToTop:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+        }
+
+        #scrollToTop:active {
+            transform: scale(0.95);
+        }
+
+        /* Progress ring around button */
+        .progress-ring {
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            width: 61px;
+            height: 61px;
+            transform: rotate(-90deg);
+        }
+
+        .progress-ring-circle {
+            stroke: rgba(255, 255, 255, 0.3);
+            fill: transparent;
+            stroke-width: 3;
+        }
+
+        .progress-ring-circle-progress {
+            stroke: white;
+            fill: transparent;
+            stroke-width: 3;
+            stroke-dasharray: 180;
+            stroke-dashoffset: 180;
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            padding: 40px 20px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .content-section {
+                padding: 25px;
+            }
+
+            #scrollToTop {
+                width: 50px;
+                height: 50px;
+                bottom: 20px;
+                right: 20px;
+            }
+
+            .progress-ring {
+                width: 56px;
+                height: 56px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⬆️ Scroll to Top Demo</h1>
+            <p class="subtitle">Scroll down to see the magic happen!</p>
+        </header>
+
+        <div class="scroll-indicator">
+            ↓ Scroll Down ↓
+        </div>
+
+        <div class="content-section">
+            <h2>Understanding Scroll Position</h2>
+            <p>The scroll-to-top button uses JavaScript to detect your current position on the page. When you scroll past a certain threshold, the button elegantly fades into view. This demo also includes a progress ring that shows how far you've scrolled down the page.</p>
+            <p>The button appears using CSS transitions and transforms, creating a smooth animation effect. The combination of opacity, visibility, and scale creates a professional entrance animation.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Smooth Scrolling Behavior</h2>
+            <p>When you click the button, JavaScript uses the smooth scroll behavior to animate your journey back to the top of the page. This is much more pleasant than an instant jump, providing better user experience and maintaining context.</p>
+            <p>The smooth scrolling feature is implemented using the window.scrollTo() method with the 'smooth' behavior option, which is supported by all modern browsers.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Responsive Design</h2>
+            <p>The scroll-to-top button is fully responsive and adapts to different screen sizes. On mobile devices, the button is slightly smaller and positioned to avoid interfering with touch interactions.</p>
+            <p>The fixed positioning ensures the button stays in the same place on your screen as you scroll, making it always accessible when you need it.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Visual Feedback</h2>
+            <p>Notice the hover effects and active states on the button. When you hover over it, the button scales up and the shadow becomes more prominent. When clicked, it briefly scales down to provide tactile feedback.</p>
+            <p>The progress ring around the button fills up as you scroll down, giving you a visual indicator of your position on the page. This adds an extra layer of functionality and visual interest.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Performance Considerations</h2>
+            <p>The scroll event listener is optimized to update both the button visibility and the progress ring efficiently. Modern CSS transitions handle the animations, which are GPU-accelerated for smooth performance.</p>
+            <p>The button only appears after scrolling 300 pixels down, reducing visual clutter when it's not needed and ensuring it doesn't interfere with the initial viewing experience.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Accessibility Features</h2>
+            <p>The button includes proper ARIA labels to ensure screen readers can identify its purpose. Keyboard users can also tab to the button and activate it with the Enter or Space key.</p>
+            <p>The large click target (55x55 pixels) meets accessibility guidelines and makes it easy to click on both desktop and mobile devices.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Keep Scrolling!</h2>
+            <p>Continue scrolling down to see the progress ring fill up completely. Watch how the button remains visible and accessible no matter where you are on the page.</p>
+            <p>This pattern is commonly used on long-form content websites, blogs, documentation sites, and e-commerce product pages to improve navigation and user experience.</p>
+        </div>
+
+        <div class="content-section">
+            <h2>Browser Compatibility</h2>
+            <p>The scroll-to-top functionality works across all modern browsers including Chrome, Firefox, Safari, and Edge. The smooth scrolling behavior is natively supported, eliminating the need for external libraries.</p>
+            <p>For older browsers, the functionality degrades gracefully – the scrolling still works, just without the smooth animation effect.</p>
+        </div>
+
+        <footer>
+            <p>© 2024 Scroll to Top Demo | Built with HTML, CSS & JavaScript</p>
+            <p style="margin-top: 10px; opacity: 0.8;">Try clicking the button to return to the top! ⬆️</p>
+        </footer>
+    </div>
+
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" aria-label="Scroll to top">
+        <svg class="progress-ring" width="61" height="61">
+            <circle class="progress-ring-circle" cx="30.5" cy="30.5" r="28.5"></circle>
+            <circle class="progress-ring-circle-progress" cx="30.5" cy="30.5" r="28.5"></circle>
+        </svg>
+        ↑
+    </button>
+
+    <script>
+        // Get the button and progress ring elements
+        const scrollToTopBtn = document.getElementById('scrollToTop');
+        const progressRing = document.querySelector('.progress-ring-circle-progress');
+        const radius = 28.5;
+        const circumference = 2 * Math.PI * radius;
+
+        // Set up the progress ring
+        progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressRing.style.strokeDashoffset = circumference;
+
+        // Function to update scroll progress
+        function updateScrollProgress() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercent = scrollTop / docHeight;
+            const offset = circumference - (scrollPercent * circumference);
+            
+            progressRing.style.strokeDashoffset = offset;
+        }
+
+        // Show/hide button based on scroll position
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Show button after scrolling 300px
+            if (scrollTop > 300) {
+                scrollToTopBtn.classList.add('visible');
+            } else {
+                scrollToTopBtn.classList.remove('visible');
+            }
+
+            // Update progress ring
+            updateScrollProgress();
+        });
+
+        // Scroll to top when button is clicked
+        scrollToTopBtn.addEventListener('click', function() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Keyboard accessibility
+        scrollToTopBtn.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    </script>
+</body>
+</html>
