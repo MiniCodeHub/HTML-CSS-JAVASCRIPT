@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Tab Switcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .tab-header {
+            display: flex;
+            position: relative;
+            background: #f8f9fa;
+            padding: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 20px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6c757d;
+            cursor: pointer;
+            transition: color 0.3s ease;
+            position: relative;
+            z-index: 2;
+        }
+
+        .tab-btn:hover {
+            color: #495057;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+        }
+
+        .tab-indicator {
+            position: absolute;
+            bottom: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            border-radius: 4px 4px 0 0;
+            z-index: 1;
+        }
+
+        .tab-highlight {
+            position: absolute;
+            top: 0;
+            height: 100%;
+            background: rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0;
+        }
+
+        .tab-highlight.show {
+            opacity: 1;
+        }
+
+        .tab-content-wrapper {
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        .tab-content {
+            padding: 40px;
+            opacity: 0;
+            transform: translateX(50px);
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            display: none;
+        }
+
+        .tab-content.active {
+            opacity: 1;
+            transform: translateX(0);
+            position: relative;
+            pointer-events: auto;
+            display: block;
+        }
+
+        .tab-content.exit-left {
+            animation: slideOutLeft 0.4s ease forwards;
+        }
+
+        .tab-content.enter-right {
+            animation: slideInRight 0.4s ease forwards;
+        }
+
+        .tab-content.exit-right {
+            animation: slideOutRight 0.4s ease forwards;
+        }
+
+        .tab-content.enter-left {
+            animation: slideInLeft 0.4s ease forwards;
+        }
+
+        @keyframes slideOutLeft {
+            to {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutRight {
+            to {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .content-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .content-description {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #4a5568;
+            margin-bottom: 20px;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+
+        .feature-list li {
+            padding: 12px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #4a5568;
+            font-size: 15px;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea15, #764ba215);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 20px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        @media (max-width: 600px) {
+            .tab-btn {
+                padding: 15px 10px;
+                font-size: 14px;
+            }
+
+            .tab-content {
+                padding: 30px 20px;
+            }
+
+            .content-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="tab-header">
+            <button class="tab-btn active" data-tab="overview">Overview</button>
+            <button class="tab-btn" data-tab="features">Features</button>
+            <button class="tab-btn" data-tab="pricing">Pricing</button>
+            <button class="tab-btn" data-tab="about">About</button>
+            <div class="tab-indicator"></div>
+            <div class="tab-highlight"></div>
+        </div>
+
+        <div class="tab-content-wrapper">
+            <div class="tab-content active" data-content="overview">
+                <h2 class="content-title">Welcome to Our Platform</h2>
+                <p class="content-description">
+                    Experience the next generation of digital solutions. Our platform combines cutting-edge technology 
+                    with intuitive design to deliver exceptional results for your business.
+                </p>
+                <p class="content-description">
+                    Join thousands of satisfied customers who have transformed their workflow with our innovative tools 
+                    and dedicated support team.
+                </p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">10K+</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Satisfaction</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Support</div>
+                    </div>
+                </div>
+                <a href="#" class="action-btn">Get Started</a>
+            </div>
+
+            <div class="tab-content" data-content="features">
+                <h2 class="content-title">Powerful Features</h2>
+                <p class="content-description">
+                    Discover the comprehensive suite of tools designed to streamline your operations and 
+                    boost productivity.
+                </p>
+                <ul class="feature-list">
+                    <li>Real-time collaboration and team synchronization</li>
+                    <li>Advanced analytics and reporting dashboard</li>
+                    <li>Automated workflow optimization</li>
+                    <li>Enterprise-grade security and encryption</li>
+                    <li>Seamless third-party integrations</li>
+                    <li>Cloud storage with unlimited scalability</li>
+                    <li>Mobile apps for iOS and Android</li>
+                    <li>AI-powered insights and recommendations</li>
+                </ul>
+                <a href="#" class="action-btn">Explore Features</a>
+            </div>
+
+            <div class="tab-content" data-content="pricing">
+                <h2 class="content-title">Flexible Pricing Plans</h2>
+                <p class="content-description">
+                    Choose the perfect plan that fits your needs. All plans include core features with 
+                    no hidden fees or surprise charges.
+                </p>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">$29</div>
+                        <div class="stat-label">Starter Plan</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$79</div>
+                        <div class="stat-label">Pro Plan</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">$199</div>
+                        <div class="stat-label">Enterprise</div>
+                    </div>
+                </div>
+                <p class="content-description" style="margin-top: 30px;">
+                    All plans include a 14-day free trial. No credit card required. Cancel anytime with 
+                    full money-back guarantee within the first 30 days.
+                </p>
+                <a href="#" class="action-btn">View Full Pricing</a>
+            </div>
+
+            <div class="tab-content" data-content="about">
+                <h2 class="content-title">About Our Company</h2>
+                <p class="content-description">
+                    Founded in 2020, we've been on a mission to revolutionize how businesses operate in the 
+                    digital age. Our team of experts combines decades of industry experience with innovative 
+                    thinking to create solutions that make a real difference.
+                </p>
+                <p class="content-description">
+                    We believe in transparency, reliability, and putting our customers first. Every feature 
+                    we build is designed with real user feedback and rigorous testing to ensure it meets the 
+                    highest standards of quality and performance.
+                </p>
+                <ul class="feature-list">
+                    <li>Award-winning customer service team</li>
+                    <li>ISO 27001 certified security standards</li>
+                    <li>Global presence in 50+ countries</li>
+                    <li>Committed to sustainability and social responsibility</li>
+                </ul>
+                <a href="#" class="action-btn">Learn More</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get all tab buttons and content
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const tabIndicator = document.querySelector('.tab-indicator');
+        const tabHighlight = document.querySelector('.tab-highlight');
+        const tabHeader = document.querySelector('.tab-header');
+
+        let currentTabIndex = 0;
+
+        // Initialize indicator position
+        function updateIndicator(btn) {
+            const { offsetLeft, offsetWidth } = btn;
+            tabIndicator.style.left = `${offsetLeft}px`;
+            tabIndicator.style.width = `${offsetWidth}px`;
+        }
+
+        // Initialize on page load
+        updateIndicator(tabBtns[0]);
+
+        // Tab switching logic
+        tabBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.dataset.tab;
+                const previousIndex = currentTabIndex;
+                currentTabIndex = index;
+
+                // Update active button
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update indicator
+                updateIndicator(btn);
+
+                // Determine animation direction
+                const direction = index > previousIndex ? 'right' : 'left';
+
+                // Update content with animation
+                tabContents.forEach(content => {
+                    if (content.dataset.content === targetTab) {
+                        // Remove any existing animation classes
+                        content.classList.remove('exit-left', 'exit-right', 'enter-left', 'enter-right');
+                        
+                        // Add enter animation
+                        if (direction === 'right') {
+                            content.classList.add('enter-right');
+                        } else {
+                            content.classList.add('enter-left');
+                        }
+                        
+                        content.classList.add('active');
+                    } else if (content.classList.contains('active')) {
+                        // Add exit animation to current content
+                        if (direction === 'right') {
+                            content.classList.add('exit-left');
+                        } else {
+                            content.classList.add('exit-right');
+                        }
+                        
+                        // Remove active class after animation
+                        setTimeout(() => {
+                            content.classList.remove('active', 'exit-left', 'exit-right');
+                        }, 400);
+                    }
+                });
+            });
+
+            // Hover highlight effect
+            btn.addEventListener('mouseenter', () => {
+                const { offsetLeft, offsetWidth } = btn;
+                tabHighlight.style.left = `${offsetLeft}px`;
+                tabHighlight.style.width = `${offsetWidth}px`;
+                tabHighlight.classList.add('show');
+            });
+        });
+
+        // Hide highlight when leaving tab header
+        tabHeader.addEventListener('mouseleave', () => {
+            tabHighlight.classList.remove('show');
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            const activeBtn = document.querySelector('.tab-btn.active');
+            updateIndicator(activeBtn);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' && currentTabIndex > 0) {
+                tabBtns[currentTabIndex - 1].click();
+            } else if (e.key === 'ArrowRight' && currentTabIndex < tabBtns.length - 1) {
+                tabBtns[currentTabIndex + 1].click();
+            }
+        });
+    </script>
+</body>
+</html>
