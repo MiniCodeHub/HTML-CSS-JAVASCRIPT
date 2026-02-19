@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parallax — Into the Wild</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --sky: #0a0e1a;
+    --horizon: #1a2340;
+    --mist: #2d4a6e;
+    --gold: #c9a96e;
+    --cream: #f0e8d8;
+    --fog: rgba(210,225,240,0.12);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--sky);
+    color: var(--cream);
+    font-family: 'Cormorant Garamond', serif;
+    overflow-x: hidden;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--sky); }
+  ::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 2px; }
+
+  /* ══════════════════════════════
+     SCENE 1 — HERO
+  ══════════════════════════════ */
+  .scene {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* layers */
+  .layer {
+    position: absolute;
+    inset: -20% -5%;
+    width: 110%;
+    height: 140%;
+    will-change: transform;
+  }
+
+  /* ── Stars (layer 0) */
+  #stars {
+    background:
+      radial-gradient(1px 1px at 10% 15%, white, transparent),
+      radial-gradient(1px 1px at 25% 40%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1.5px 1.5px at 50% 10%, white, transparent),
+      radial-gradient(1px 1px at 70% 25%, rgba(255,255,255,.8), transparent),
+      radial-gradient(1px 1px at 85% 55%, rgba(255,255,255,.6), transparent),
+      radial-gradient(1px 1px at 15% 65%, white, transparent),
+      radial-gradient(1px 1px at 35% 80%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 60% 70%, rgba(255,255,255,.9), transparent),
+      radial-gradient(1px 1px at 90% 85%, white, transparent),
+      radial-gradient(1px 1px at 5% 90%, rgba(255,255,255,.7), transparent),
+      radial-gradient(1px 1px at 45% 50%, rgba(255,255,255,.4), transparent),
+      radial-gradient(1.5px 1.5px at 78% 12%, rgba(255,255,230,.9), transparent),
+      radial-gradient(1px 1px at 22% 30%, rgba(255,255,255,.6), transparent),
+      radial-gradient(1px 1px at 65% 45%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 42% 92%, rgba(255,255,255,.7), transparent);
+    background-color: var(--sky);
+    background-size: 100% 100%;
+  }
+
+  /* ── Aurora (layer 1) */
+  #aurora {
+    background:
+      radial-gradient(ellipse 80% 40% at 50% 0%, rgba(20,80,120,.5) 0%, transparent 70%),
+      radial-gradient(ellipse 60% 30% at 30% 5%, rgba(10,60,100,.4) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 25% at 70% 3%, rgba(30,50,130,.3) 0%, transparent 55%);
+    mix-blend-mode: screen;
+  }
+
+  /* ── Far mountains (layer 2) */
+  #mountain-far {
+    background-color: transparent;
+  }
+  #mountain-far svg, #mountain-mid svg, #mountain-near svg, #trees svg {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* ── Mist (layer 3) */
+  #mist-layer {
+    background:
+      linear-gradient(to top, rgba(30,60,90,.6) 0%, transparent 40%),
+      radial-gradient(ellipse 120% 20% at 50% 85%, rgba(60,100,140,.4) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* ── Ground (layer 5) */
+  #ground {
+    background: linear-gradient(to top, #0c1a10 0%, #0f2315 40%, transparent 60%);
+  }
+
+  /* ── Hero Text ── */
+  .hero-text {
+    position: relative;
+    z-index: 20;
+    text-align: center;
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 300;
+    letter-spacing: .35em;
+    font-size: .75rem;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp .8s .3s forwards;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 10vw, 8rem);
+    font-weight: 700;
+    line-height: .9;
+    letter-spacing: -.02em;
+    color: var(--cream);
+    text-shadow: 0 0 80px rgba(201,169,110,.3), 0 4px 40px rgba(0,0,0,.8);
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeUp .9s .5s forwards;
+  }
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .hero-sub {
+    font-weight: 300;
+    font-size: 1.1rem;
+    letter-spacing: .15em;
+    color: rgba(240,232,216,.6);
+    margin-top: 1.8rem;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp .8s .7s forwards;
+  }
+  .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .6rem;
+    opacity: 0;
+    animation: fadeUp .8s 1.2s forwards;
+  }
+  .scroll-hint span {
+    font-size: .65rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: rgba(201,169,110,.7);
+  }
+  .scroll-line {
+    width: 1px;
+    height: 48px;
+    background: linear-gradient(to bottom, rgba(201,169,110,.7), transparent);
+    animation: scrollPulse 2s infinite;
+  }
+
+  /* ══════════════════════════════
+     CONTENT SECTIONS
+  ══════════════════════════════ */
+  .content-section {
+    position: relative;
+    z-index: 30;
+    background: #080d12;
+    padding: 8rem 0;
+    overflow: hidden;
+  }
+  .content-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(20,60,100,.2) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 60% at 80% 30%, rgba(10,40,80,.15) 0%, transparent 70%);
+  }
+
+  .section-inner {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3rem;
+    margin: 5rem 0;
+  }
+  .stat-item {
+    text-align: center;
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity .7s, transform .7s;
+  }
+  .stat-item.visible { opacity: 1; transform: none; }
+  .stat-item:nth-child(2) { transition-delay: .15s; }
+  .stat-item:nth-child(3) { transition-delay: .3s; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: .7rem;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+    color: rgba(240,232,216,.45);
+    margin-top: .5rem;
+  }
+
+  .section-label {
+    font-size: .65rem;
+    letter-spacing: .4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    opacity: .8;
+    margin-bottom: 1.5rem;
+  }
+  .section-heading {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.1;
+    font-weight: 400;
+    color: var(--cream);
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity .7s, transform .7s;
+  }
+  .section-heading.visible { opacity: 1; transform: none; }
+  .section-body {
+    font-size: 1.05rem;
+    line-height: 1.9;
+    color: rgba(240,232,216,.55);
+    max-width: 600px;
+    margin-top: 1.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .7s .2s, transform .7s .2s;
+  }
+  .section-body.visible { opacity: 1; transform: none; }
+
+  .divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(to right, var(--gold), transparent);
+    margin: 3rem 0;
+  }
+
+  /* ── Second Parallax Scene ── */
+  .scene-2 {
+    position: relative;
+    height: 80vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .scene-2 .layer { bottom: 0; }
+  #forest-bg {
+    background:
+      radial-gradient(ellipse 100% 60% at 50% 100%, #0a1f0e 0%, transparent 70%),
+      linear-gradient(to bottom, #060c0a, #0d1f12 60%, #081508);
+  }
+  .mid-text {
+    position: relative;
+    z-index: 20;
+    text-align: center;
+  }
+  .mid-text h2 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(2rem, 5vw, 4rem);
+    color: var(--cream);
+    text-shadow: 0 0 60px rgba(201,169,110,.2);
+  }
+  .mid-text p {
+    font-size: .8rem;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: rgba(201,169,110,.6);
+    margin-top: 1rem;
+  }
+
+  /* ── Footer scene ── */
+  .scene-3 {
+    position: relative;
+    height: 60vh;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, #080d12, #020508);
+  }
+  .footer-text {
+    position: relative;
+    z-index: 20;
+    text-align: center;
+  }
+  .footer-text h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.5rem, 4vw, 3rem);
+    color: var(--cream);
+    opacity: .85;
+  }
+  .footer-text p {
+    font-size: .7rem;
+    letter-spacing: .35em;
+    text-transform: uppercase;
+    color: rgba(201,169,110,.5);
+    margin-top: 1rem;
+  }
+
+  /* ── Floating orb overlay ── */
+  .orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    opacity: .12;
+    will-change: transform;
+  }
+  .orb-1 { width: 500px; height: 500px; background: #2a6090; top: -100px; left: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: #1a4a30; bottom: -80px; right: -80px; }
+
+  /* ══════════════════════════════
+     ANIMATIONS
+  ══════════════════════════════ */
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scrollPulse {
+    0%, 100% { opacity: .7; transform: scaleY(1); }
+    50% { opacity: .3; transform: scaleY(.6); }
+  }
+
+  /* ── Debug info ── */
+  #scroll-info {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 1000;
+    background: rgba(0,0,0,.6);
+    border: 1px solid rgba(201,169,110,.3);
+    color: var(--gold);
+    font-size: .65rem;
+    letter-spacing: .1em;
+    padding: .6rem 1rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    backdrop-filter: blur(8px);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ SCENE 1 — HERO ══ -->
+<section class="scene" id="scene1">
+
+  <!-- Layer 0: Stars -->
+  <div class="layer" id="stars" data-speed="0.1"></div>
+
+  <!-- Layer 1: Aurora -->
+  <div class="layer" id="aurora" data-speed="0.15"></div>
+
+  <!-- Layer 2: Far mountains -->
+  <div class="layer" id="mountain-far" data-speed="0.2">
+    <svg viewBox="0 0 1440 800" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mt-far-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1a2d50"/>
+          <stop offset="100%" stop-color="#0d1a30"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,800 L0,480 L80,420 L160,460 L260,350 L380,410 L500,300 L620,380 L720,260 L840,340 L940,250 L1060,320 L1160,230 L1280,310 L1380,270 L1440,300 L1440,800 Z" fill="url(#mt-far-grad)" opacity="0.9"/>
+      <path d="M0,800 L0,520 L100,480 L200,510 L340,430 L460,470 L560,390 L680,430 L780,360 L900,400 L1000,340 L1120,390 L1220,330 L1340,370 L1440,350 L1440,800 Z" fill="#111e35" opacity="0.8"/>
+    </svg>
+  </div>
+
+  <!-- Layer 3: Mid mountains -->
+  <div class="layer" id="mountain-mid" data-speed="0.35">
+    <svg viewBox="0 0 1440 800" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mt-mid-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#152838"/>
+          <stop offset="100%" stop-color="#0a1520"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,800 L0,560 L120,500 L240,540 L400,440 L520,500 L680,400 L800,460 L960,380 L1080,440 L1200,370 L1320,430 L1440,410 L1440,800 Z" fill="url(#mt-mid-grad)"/>
+    </svg>
+  </div>
+
+  <!-- Layer 4: Mist -->
+  <div class="layer" id="mist-layer" data-speed="0.45" style="z-index:5;"></div>
+
+  <!-- Layer 5: Near mountains -->
+  <div class="layer" id="mountain-near" data-speed="0.55">
+    <svg viewBox="0 0 1440 800" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mt-near-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d1c15"/>
+          <stop offset="100%" stop-color="#060e0a"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,800 L0,620 L160,550 L300,600 L480,510 L620,570 L760,480 L900,540 L1060,460 L1200,520 L1360,470 L1440,490 L1440,800 Z" fill="url(#mt-near-grad)"/>
+    </svg>
+  </div>
+
+  <!-- Layer 6: Trees -->
+  <div class="layer" id="trees" data-speed="0.75" style="z-index:10;">
+    <svg viewBox="0 0 1440 800" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <g fill="#060e08">
+        <!-- tree generator: triangles -->
+        <polygon points="60,800 60,660 100,640 100,800"/>
+        <polygon points="95,800 80,640 120,640"/>
+        <polygon points="70,670 100,580 130,670"/>
+        <polygon points="80,610 100,540 120,610"/>
+
+        <polygon points="180,800 180,670 210,660 210,800"/>
+        <polygon points="175,680 210,600 245,680"/>
+        <polygon points="185,630 210,560 235,630"/>
+
+        <polygon points="310,800 295,680 345,660 345,800"/>
+        <polygon points="300,690 335,610 370,690"/>
+        <polygon points="310,640 335,570 360,640"/>
+
+        <polygon points="480,800 465,700 500,685 500,800"/>
+        <polygon points="465,710 500,630 535,710"/>
+        <polygon points="475,660 500,590 525,660"/>
+
+        <polygon points="650,800 635,690 670,680 670,800"/>
+        <polygon points="630,700 665,615 700,700"/>
+        <polygon points="640,650 665,575 690,650"/>
+
+        <polygon points="830,800 815,695 850,685 850,800"/>
+        <polygon points="815,705 850,625 885,705"/>
+        <polygon points="825,655 850,580 875,655"/>
+
+        <polygon points="1000,800 985,700 1020,690 1020,800"/>
+        <polygon points="985,710 1020,630 1055,710"/>
+        <polygon points="995,660 1020,590 1045,660"/>
+
+        <polygon points="1170,800 1155,695 1190,685 1190,800"/>
+        <polygon points="1155,705 1190,620 1225,705"/>
+        <polygon points="1165,655 1190,580 1215,655"/>
+
+        <polygon points="1340,800 1325,700 1360,690 1360,800"/>
+        <polygon points="1325,710 1360,630 1395,710"/>
+        <polygon points="1335,660 1360,585 1385,660"/>
+
+        <!-- Dense ground foliage -->
+        <rect x="0" y="750" width="1440" height="50" opacity="0.9"/>
+        <path d="M0,760 Q180,740 360,755 Q540,770 720,750 Q900,730 1080,748 Q1260,766 1440,752 L1440,800 L0,800 Z" opacity="0.5"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Ground overlay -->
+  <div class="layer" id="ground" data-speed="0.9" style="z-index:12;"></div>
+
+  <!-- Hero Text -->
+  <div class="hero-text" style="z-index:15;">
+    <p class="hero-eyebrow">A Journey Into Depth</p>
+    <h1 class="hero-title">Into the<br><em>Wild</em></h1>
+    <p class="hero-sub">Parallax · Layers · Depth</p>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+
+<!-- ══ CONTENT SECTION ══ -->
+<section class="content-section" id="content1">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="section-inner">
+    <p class="section-label">The Technique</p>
+    <h2 class="section-heading" data-reveal>Layers moving at different speeds create the illusion of depth</h2>
+    <div class="divider"></div>
+    <p class="section-body" data-reveal>
+      Parallax scrolling works by translating each layer along the Y axis at a fraction of the scroll offset.
+      Stars move slowly — only 10% of the scroll distance. Near trees move at 75%.
+      The human eye interprets this differential motion as real three-dimensional space.
+    </p>
+
+    <div class="stat-grid">
+      <div class="stat-item" data-reveal>
+        <div class="stat-num">6</div>
+        <div class="stat-label">Distinct Layers</div>
+      </div>
+      <div class="stat-item" data-reveal>
+        <div class="stat-num">0.1×</div>
+        <div class="stat-label">Stars Speed</div>
+      </div>
+      <div class="stat-item" data-reveal>
+        <div class="stat-num">0.75×</div>
+        <div class="stat-label">Trees Speed</div>
+      </div>
+    </div>
+
+    <p class="section-label">How It Works</p>
+    <h2 class="section-heading" data-reveal>Scroll events drive CSS transforms in real time</h2>
+    <p class="section-body" data-reveal>
+      On every scroll event, we read <code style="color:var(--gold);font-size:.9em">window.scrollY</code>
+      and apply <code style="color:var(--gold);font-size:.9em">translateY(offset × speed)</code>
+      to each layer. Using <code style="color:var(--gold);font-size:.9em">will-change: transform</code>
+      promotes layers to the GPU, keeping animation buttery at 60 fps.
+    </p>
+  </div>
+</section>
+
+
+<!-- ══ SCENE 2 — FOREST ══ -->
+<section class="scene-2" id="scene2">
+  <div class="layer" id="forest-bg" data-speed="0.1" data-scene="2"></div>
+
+  <div class="layer" data-speed="0.3" data-scene="2" style="z-index:3;">
+    <svg viewBox="0 0 1440 600" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="forest-grad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d2218"/>
+          <stop offset="100%" stop-color="#061009"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,600 L0,350 L80,310 L160,340 L260,260 L380,300 L480,220 L600,270 L720,190 L840,245 L960,175 L1080,230 L1200,165 L1320,215 L1440,200 L1440,600 Z" fill="url(#forest-grad)"/>
+    </svg>
+  </div>
+
+  <div class="layer" data-speed="0.6" data-scene="2" style="z-index:6;">
+    <svg viewBox="0 0 1440 600" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+      <g fill="#040c06">
+        <polygon points="0,600 0,450 40,430 40,600"/>
+        <polygon points="20,460 40,380 60,460"/>
+        <polygon points="25,410 40,345 55,410"/>
+
+        <polygon points="200,600 185,465 215,450 215,600"/>
+        <polygon points="185,475 215,395 245,475"/>
+        <polygon points="195,425 215,355 235,425"/>
+
+        <polygon points="420,600 405,470 435,455 435,600"/>
+        <polygon points="405,480 435,400 465,480"/>
+
+        <polygon points="660,600 645,465 675,450 675,600"/>
+        <polygon points="645,475 675,395 705,475"/>
+        <polygon points="655,425 675,355 695,425"/>
+
+        <polygon points="900,600 885,470 915,455 915,600"/>
+        <polygon points="885,480 915,400 945,480"/>
+
+        <polygon points="1140,600 1125,460 1155,445 1155,600"/>
+        <polygon points="1125,470 1155,390 1185,470"/>
+        <polygon points="1135,420 1155,350 1175,420"/>
+
+        <polygon points="1380,600 1365,465 1395,450 1395,600"/>
+        <polygon points="1365,475 1395,395 1425,475"/>
+
+        <rect x="0" y="570" width="1440" height="30"/>
+      </g>
+    </svg>
+  </div>
+
+  <!-- Mist / atmosphere -->
+  <div class="layer" data-speed="0.5" data-scene="2" style="z-index:8; pointer-events:none;">
+    <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(15,40,25,.7) 0%, transparent 50%), radial-gradient(ellipse 120% 30% at 50% 80%, rgba(30,80,50,.4) 0%, transparent 70%);"></div>
+  </div>
+
+  <div class="mid-text" style="z-index:15;">
+    <h2>Through the Canopy</h2>
+    <p>Depth through differential motion</p>
+  </div>
+</section>
+
+
+<!-- ══ CONTENT 2 ══ -->
+<section class="content-section" id="content2">
+  <div class="section-inner">
+    <p class="section-label">Implementation</p>
+    <h2 class="section-heading" data-reveal>The math is beautifully simple</h2>
+    <p class="section-body" data-reveal>
+      Each layer has a <code style="color:var(--gold)">data-speed</code> attribute between 0 and 1.
+      On scroll: <code style="color:var(--gold)">layer.style.transform = translateY(scrollY × speed × -1)</code>.
+      Negative direction moves layers upward relative to their parent, creating the parallax offset.
+      An IntersectionObserver handles the fade-in animations independently.
+    </p>
+    <div class="divider"></div>
+    <h2 class="section-heading" data-reveal>Performance considerations</h2>
+    <p class="section-body" data-reveal>
+      We use <code style="color:var(--gold)">requestAnimationFrame</code> to throttle updates to the display refresh rate,
+      and <code style="color:var(--gold)">will-change: transform</code> to hint the browser to create separate compositor layers —
+      preventing unnecessary repaints and keeping the main thread free.
+    </p>
+  </div>
+</section>
+
+
+<!-- ══ SCENE 3 — OUTRO ══ -->
+<section class="scene-3" id="scene3">
+  <div style="position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%, rgba(20,50,80,.3) 0%, transparent 70%);z-index:1;"></div>
+
+  <!-- Floating particles -->
+  <canvas id="particles" style="position:absolute;inset:0;width:100%;height:100%;z-index:2;opacity:.4;"></canvas>
+
+  <div class="footer-text" style="z-index:10;">
+    <h3>The world has depth.<br>Let your interfaces show it.</h3>
+    <p>Scroll · Transform · Animate</p>
+  </div>
+</section>
+
+
+<!-- ── Scroll Debug ── -->
+<div id="scroll-info">
+  scrollY: <span id="si-y">0</span>px &nbsp;|&nbsp; depth: <span id="si-d">—</span>
+</div>
+
+
+<script>
+/* ══════════════════════════════════════════
+   PARALLAX ENGINE
+══════════════════════════════════════════ */
+
+const layers1 = document.querySelectorAll('#scene1 .layer[data-speed]');
+const layers2 = document.querySelectorAll('#scene2 .layer[data-speed]');
+const scene2  = document.getElementById('scene2');
+
+// Store scene offsets
+let scene2Top = 0;
+
+function updateOffsets() {
+  scene2Top = scene2.getBoundingClientRect().top + window.scrollY;
+}
+updateOffsets();
+window.addEventListener('resize', updateOffsets);
+
+/* ── rAF-throttled scroll handler ── */
+let ticking = false;
+let lastScrollY = 0;
+
+function onScroll() {
+  lastScrollY = window.scrollY;
+  if (!ticking) {
+    requestAnimationFrame(updateParallax);
+    ticking = true;
+  }
+}
+
+function updateParallax() {
+  const scrollY = lastScrollY;
+
+  /* Scene 1 layers — offset from page top */
+  layers1.forEach(layer => {
+    const speed = parseFloat(layer.dataset.speed);
+    const offset = scrollY * speed;
+    layer.style.transform = `translateY(${offset}px)`;
+  });
+
+  /* Scene 2 layers — offset relative to scene2's top */
+  const scene2Scroll = scrollY - scene2Top;
+  layers2.forEach(layer => {
+    const speed = parseFloat(layer.dataset.speed);
+    const offset = scene2Scroll * speed;
+    layer.style.transform = `translateY(${offset}px)`;
+  });
+
+  /* Debug info */
+  document.getElementById('si-y').textContent = Math.round(scrollY);
+  const totalH = document.body.scrollHeight - window.innerHeight;
+  const pct = totalH > 0 ? Math.round((scrollY / totalH) * 100) : 0;
+  document.getElementById('si-d').textContent = pct + '%';
+
+  ticking = false;
+}
+
+window.addEventListener('scroll', onScroll, { passive: true });
+
+
+/* ══════════════════════════════════════════
+   INTERSECTION OBSERVER — reveal animations
+══════════════════════════════════════════ */
+const revealEls = document.querySelectorAll('[data-reveal], .stat-item');
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      revealObs.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+revealEls.forEach(el => revealObs.observe(el));
+
+
+/* ══════════════════════════════════════════
+   PARTICLE CANVAS — outro scene
+══════════════════════════════════════════ */
+(function() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let w, h, pts;
+
+  function resize() {
+    w = canvas.width  = canvas.offsetWidth;
+    h = canvas.height = canvas.offsetHeight;
+  }
+
+  function initPts() {
+    pts = Array.from({ length: 80 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.5 + .3,
+      vx: (Math.random() - .5) * .3,
+      vy: -Math.random() * .4 - .1,
+      a: Math.random(),
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    pts.forEach(p => {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(201,169,110,${p.a * .8})`;
+      ctx.fill();
+
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.y < -5) { p.y = h + 5; p.x = Math.random() * w; }
+    });
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  initPts();
+  draw();
+  window.addEventListener('resize', () => { resize(); initPts(); });
+})();
+</script>
+
+</body>
+</html>
