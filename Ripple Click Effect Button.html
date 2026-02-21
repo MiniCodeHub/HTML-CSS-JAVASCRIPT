@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ripple Click Effect 🌊</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --border: #2a2a3a;
+    --accent: #00e5ff;
+    --accent2: #7c3aed;
+    --accent3: #f59e0b;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 60px;
+    padding: 40px 20px;
+    overflow-x: hidden;
+  }
+
+  /* Ambient background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 20% 50%, rgba(0,229,255,0.04) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 50% at 80% 30%, rgba(124,58,237,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .title {
+    text-align: center;
+    position: relative;
+  }
+
+  .title h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #fff 0%, var(--accent) 50%, var(--accent2) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .title p {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Button Grid */
+  .button-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    justify-content: center;
+    max-width: 800px;
+  }
+
+  /* Base ripple button */
+  .ripple-btn {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 18px 40px;
+    border-radius: 4px;
+    transition: transform 0.15s ease, box-shadow 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .ripple-btn:active { transform: scale(0.97); }
+
+  /* Ripple span injected by JS */
+  .ripple {
+    position: absolute;
+    border-radius: 50%;
+    transform: scale(0);
+    animation: ripple-expand 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    pointer-events: none;
+  }
+
+  @keyframes ripple-expand {
+    0%   { transform: scale(0); opacity: 0.6; }
+    70%  { transform: scale(1); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 0; }
+  }
+
+  /* ── Variant 1: Cyan ── */
+  .btn-cyan {
+    background: var(--accent);
+    color: #000;
+    box-shadow: 0 0 20px rgba(0,229,255,0.2), 0 4px 15px rgba(0,0,0,0.4);
+  }
+  .btn-cyan:hover {
+    box-shadow: 0 0 35px rgba(0,229,255,0.35), 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .btn-cyan .ripple { background: rgba(0,0,0,0.25); }
+
+  /* ── Variant 2: Ghost ── */
+  .btn-ghost {
+    background: transparent;
+    color: var(--accent);
+    border: 1.5px solid var(--accent);
+    box-shadow: inset 0 0 0 0 var(--accent);
+    transition: background 0.3s, transform 0.15s, box-shadow 0.3s;
+  }
+  .btn-ghost:hover {
+    background: rgba(0,229,255,0.06);
+    box-shadow: 0 0 25px rgba(0,229,255,0.2);
+  }
+  .btn-ghost .ripple { background: rgba(0,229,255,0.3); }
+
+  /* ── Variant 3: Purple ── */
+  .btn-purple {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #fff;
+    box-shadow: 0 0 20px rgba(124,58,237,0.3), 0 4px 15px rgba(0,0,0,0.4);
+  }
+  .btn-purple:hover {
+    box-shadow: 0 0 35px rgba(124,58,237,0.5), 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .btn-purple .ripple { background: rgba(255,255,255,0.3); }
+
+  /* ── Variant 4: Amber ── */
+  .btn-amber {
+    background: var(--accent3);
+    color: #000;
+    box-shadow: 0 0 20px rgba(245,158,11,0.25), 0 4px 15px rgba(0,0,0,0.4);
+  }
+  .btn-amber:hover {
+    box-shadow: 0 0 35px rgba(245,158,11,0.4), 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .btn-amber .ripple { background: rgba(0,0,0,0.2); }
+
+  /* ── Variant 5: Dark surface ── */
+  .btn-dark {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-dark:hover { border-color: var(--muted); }
+  .btn-dark .ripple { background: rgba(255,255,255,0.1); }
+
+  /* ── Variant 6: Gradient border ── */
+  .btn-gradient-border {
+    background: var(--bg);
+    color: var(--text);
+    padding: 17px 39px; /* 1px less for border trick */
+  }
+  .btn-gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 4px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .btn-gradient-border .ripple { background: rgba(255,255,255,0.08); }
+
+  /* ── Big hero button ── */
+  .btn-hero {
+    padding: 28px 80px;
+    font-size: 1rem;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--accent) 0%, #0080ff 50%, var(--accent2) 100%);
+    background-size: 200% 200%;
+    color: #fff;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    box-shadow: 0 0 40px rgba(0,229,255,0.3), 0 8px 30px rgba(0,0,0,0.5);
+    animation: gradient-shift 4s ease infinite;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.3s;
+  }
+  .btn-hero:hover {
+    box-shadow: 0 0 60px rgba(0,229,255,0.45), 0 8px 35px rgba(0,0,0,0.5);
+  }
+  .btn-hero .ripple { background: rgba(255,255,255,0.25); }
+
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50%       { background-position: 100% 50%; }
+  }
+
+  /* Coordinate readout */
+  .readout {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px 28px;
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.9;
+    max-width: 420px;
+    width: 100%;
+  }
+
+  .readout .label {
+    color: var(--accent);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+
+  .readout .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .readout .val {
+    color: var(--text);
+    font-weight: 500;
+    min-width: 80px;
+    text-align: right;
+    transition: color 0.2s;
+  }
+
+  .readout .val.flash { color: var(--accent); }
+
+  /* Ripple trail log */
+  .log {
+    max-width: 420px;
+    width: 100%;
+  }
+
+  .log-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .log-entries {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 140px;
+    overflow: hidden;
+  }
+
+  .log-entry {
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 5px 10px;
+    background: var(--surface);
+    border-left: 2px solid var(--border);
+    border-radius: 0 4px 4px 0;
+    animation: slide-in 0.2s ease;
+    transition: opacity 0.4s;
+  }
+
+  .log-entry.new { border-left-color: var(--accent); color: var(--text); }
+
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.5;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="title">
+  <h1>Ripple Effect 🌊</h1>
+  <p>Material Design · Click Anywhere on a Button</p>
+</div>
+
+<span class="section-label">Button Variants</span>
+
+<div class="button-grid">
+  <button class="ripple-btn btn-cyan"            data-label="Cyan Fill">Cyan Fill</button>
+  <button class="ripple-btn btn-ghost"           data-label="Ghost">Ghost</button>
+  <button class="ripple-btn btn-purple"          data-label="Purple">Purple</button>
+  <button class="ripple-btn btn-amber"           data-label="Amber">Amber</button>
+  <button class="ripple-btn btn-dark"            data-label="Dark">Dark Surface</button>
+  <button class="ripple-btn btn-gradient-border" data-label="Gradient Border">Gradient Border</button>
+</div>
+
+<button class="ripple-btn btn-hero" data-label="Hero CTA">Launch Mission</button>
+
+<!-- Coordinate Readout -->
+<div class="readout">
+  <span class="label">// Ripple Coordinate Engine</span>
+  <div class="row"><span>click X</span><span class="val" id="cx">—</span></div>
+  <div class="row"><span>click Y</span><span class="val" id="cy">—</span></div>
+  <div class="row"><span>relative X</span><span class="val" id="rx">—</span></div>
+  <div class="row"><span>relative Y</span><span class="val" id="ry">—</span></div>
+  <div class="row"><span>ripple diameter</span><span class="val" id="rd">—</span></div>
+  <div class="row"><span>button</span><span class="val" id="rb" style="font-size:0.7rem">—</span></div>
+</div>
+
+<!-- Log -->
+<div class="log">
+  <div class="log-title">// Ripple Event Log</div>
+  <div class="log-entries" id="log"></div>
+</div>
+
+<script>
+  const log = document.getElementById('log');
+  let clickCount = 0;
+
+  function addLog(msg) {
+    clickCount++;
+    const entry = document.createElement('div');
+    entry.className = 'log-entry new';
+    entry.textContent = `[${String(clickCount).padStart(3,'0')}] ${msg}`;
+    log.prepend(entry);
+    // Remove 'new' class after animation
+    setTimeout(() => entry.classList.remove('new'), 600);
+    // Keep only 5 entries
+    while (log.children.length > 5) log.removeChild(log.lastChild);
+  }
+
+  function flash(id) {
+    const el = document.getElementById(id);
+    el.classList.add('flash');
+    setTimeout(() => el.classList.remove('flash'), 400);
+  }
+
+  document.querySelectorAll('.ripple-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      // Coordinate math
+      const rect    = this.getBoundingClientRect();
+      const clickX  = e.clientX;
+      const clickY  = e.clientY;
+      const relX    = Math.round(clickX - rect.left);
+      const relY    = Math.round(clickY - rect.top);
+      const diameter = Math.round(Math.max(rect.width, rect.height) * 2);
+      const radius   = diameter / 2;
+
+      // Update readout
+      document.getElementById('cx').textContent = `${Math.round(clickX)}px`;
+      document.getElementById('cy').textContent = `${Math.round(clickY)}px`;
+      document.getElementById('rx').textContent = `${relX}px`;
+      document.getElementById('ry').textContent = `${relY}px`;
+      document.getElementById('rd').textContent = `${diameter}px`;
+      document.getElementById('rb').textContent  = this.dataset.label;
+      ['cx','cy','rx','ry','rd','rb'].forEach(flash);
+
+      // Log
+      addLog(`"${this.dataset.label}" @ (${relX}, ${relY}) → ⌀${diameter}px`);
+
+      // Create ripple
+      const ripple = document.createElement('span');
+      ripple.className = 'ripple';
+      ripple.style.cssText = `
+        width: ${diameter}px;
+        height: ${diameter}px;
+        left: ${relX - radius}px;
+        top:  ${relY - radius}px;
+      `;
+      this.appendChild(ripple);
+
+      // Remove after animation
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+  });
+</script>
+</body>
+</html>
