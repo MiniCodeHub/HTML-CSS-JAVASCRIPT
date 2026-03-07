@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kanban Board</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #1e2535;
+    }
+
+    header h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #f1f5f9;
+    }
+
+    header h1 span { color: #818cf8; }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .add-btn:hover { background: #4f46e5; transform: translateY(-1px); }
+
+    /* ── Board ── */
+    .board {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+      padding: 28px 32px;
+      overflow-x: auto;
+    }
+
+    .column {
+      flex: 0 0 280px;
+      background: #161b27;
+      border: 1px solid #1e2535;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 130px);
+    }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid #1e2535;
+    }
+
+    .col-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .col-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .col-count {
+      font-size: 0.75rem;
+      background: #1e2535;
+      color: #64748b;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 600;
+    }
+
+    .col-add {
+      width: 26px;
+      height: 26px;
+      border: none;
+      background: #1e2535;
+      color: #64748b;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .col-add:hover { background: #6366f1; color: #fff; }
+
+    /* ── Cards Container ── */
+    .cards {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 60px;
+    }
+
+    .cards::-webkit-scrollbar { width: 4px; }
+    .cards::-webkit-scrollbar-track { background: transparent; }
+    .cards::-webkit-scrollbar-thumb { background: #2a3347; border-radius: 2px; }
+
+    .cards.drag-over {
+      background: rgba(99,102,241,0.06);
+      border-radius: 10px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: #1e2535;
+      border: 1px solid #252f42;
+      border-radius: 12px;
+      padding: 14px;
+      cursor: grab;
+      transition: box-shadow 0.2s, transform 0.2s, opacity 0.2s, border-color 0.2s;
+      position: relative;
+    }
+
+    .card:hover {
+      border-color: #6366f1;
+      box-shadow: 0 4px 20px rgba(99,102,241,0.15);
+    }
+
+    .card.dragging {
+      opacity: 0.4;
+      transform: rotate(2deg) scale(0.97);
+      cursor: grabbing;
+    }
+
+    .card-tag {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+    }
+
+    .card-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .card-desc {
+      font-size: 0.78rem;
+      color: #64748b;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #6366f1;
+      font-size: 0.6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .card-due {
+      font-size: 0.7rem;
+      color: #475569;
+    }
+
+    .card-delete {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 20px;
+      height: 20px;
+      background: #2a3347;
+      border: none;
+      border-radius: 5px;
+      color: #64748b;
+      font-size: 0.7rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+
+    .card:hover .card-delete { display: flex; }
+    .card-delete:hover { background: #ef4444; color: #fff; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #161b27;
+      border: 1px solid #252f42;
+      border-radius: 20px;
+      padding: 28px;
+      width: 380px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+
+    .modal h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: #f1f5f9;
+    }
+
+    .modal label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 5px;
+    }
+
+    .modal input, .modal textarea, .modal select {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #252f42;
+      border-radius: 10px;
+      color: #e2e8f0;
+      font-size: 0.875rem;
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .modal input:focus, .modal textarea:focus, .modal select:focus {
+      border-color: #6366f1;
+    }
+
+    .modal textarea { resize: none; height: 72px; }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+
+    .modal-actions button {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-cancel { background: #1e2535; color: #94a3b8; }
+    .btn-cancel:hover { background: #252f42; }
+    .btn-save   { background: #6366f1; color: #fff; }
+    .btn-save:hover { background: #4f46e5; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Kanban <span>Board</span></h1>
+    <button class="add-btn" onclick="openModal()">+ Add Card</button>
+  </header>
+
+  <div class="board" id="board"></div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>Add New Card</h3>
+      <label>Title</label>
+      <input type="text" id="cardTitle" placeholder="What needs to be done?"/>
+      <label>Description</label>
+      <textarea id="cardDesc" placeholder="Optional details..."></textarea>
+      <label>Column</label>
+      <select id="cardCol"></select>
+      <label>Tag</label>
+      <select id="cardTag">
+        <option value="Feature">Feature</option>
+        <option value="Bug">Bug</option>
+        <option value="Design">Design</option>
+        <option value="Docs">Docs</option>
+        <option value="Research">Research</option>
+      </select>
+      <label>Assignee Initials</label>
+      <input type="text" id="cardAssignee" placeholder="e.g. JD" maxlength="2"/>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-save"   onclick="saveCard()">Add Card</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const COLUMNS = [
+      { id: "backlog",     title: "Backlog",     color: "#64748b" },
+      { id: "todo",        title: "To Do",        color: "#f59e0b" },
+      { id: "inprogress",  title: "In Progress",  color: "#6366f1" },
+      { id: "review",      title: "In Review",    color: "#8b5cf6" },
+      { id: "done",        title: "Done",         color: "#10b981" },
+    ];
+
+    const TAG_COLORS = {
+      Feature:  { bg: "rgba(99,102,241,0.15)", text: "#818cf8" },
+      Bug:      { bg: "rgba(239,68,68,0.15)",  text: "#f87171" },
+      Design:   { bg: "rgba(168,85,247,0.15)", text: "#c084fc" },
+      Docs:     { bg: "rgba(16,185,129,0.15)", text: "#34d399" },
+      Research: { bg: "rgba(245,158,11,0.15)", text: "#fbbf24" },
+    };
+
+    let cards = [
+      { id: 1, col: "backlog",    title: "User authentication flow",      desc: "Design and implement OAuth + JWT.",        tag: "Feature",  assignee: "AS", due: "Mar 15" },
+      { id: 2, col: "backlog",    title: "Database schema design",         desc: "ERD for the main data models.",           tag: "Research", assignee: "BK", due: "Mar 18" },
+      { id: 3, col: "todo",       title: "Fix broken pagination",          desc: "Page 3 skips to page 5 on mobile.",       tag: "Bug",      assignee: "JD", due: "Mar 10" },
+      { id: 4, col: "todo",       title: "Landing page redesign",          desc: "New hero section with animations.",       tag: "Design",   assignee: "MR", due: "Mar 12" },
+      { id: 5, col: "inprogress", title: "API rate limiting",              desc: "Implement token bucket algorithm.",       tag: "Feature",  assignee: "AS", due: "Mar 11" },
+      { id: 6, col: "inprogress", title: "Update onboarding docs",         desc: "Revise getting started guide.",           tag: "Docs",     assignee: "BK", due: "Mar 9"  },
+      { id: 7, col: "review",     title: "Dark mode implementation",       desc: "CSS variables + localStorage toggle.",    tag: "Feature",  assignee: "JD", due: "Mar 8"  },
+      { id: 8, col: "done",       title: "Setup CI/CD pipeline",           desc: "GitHub Actions with auto-deploy.",        tag: "Feature",  assignee: "MR", due: "Mar 5"  },
+      { id: 9, col: "done",       title: "Write unit tests for auth",      desc: "100% coverage on auth module.",           tag: "Docs",     assignee: "AS", due: "Mar 4"  },
+    ];
+
+    let nextId   = cards.length + 1;
+    let dragCard = null;
+    let dragFrom = null;
+
+    function render() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+
+      COLUMNS.forEach(col => {
+        const colCards = cards.filter(c => c.col === col.id);
+        const colEl = document.createElement('div');
+        colEl.className = 'column';
+        colEl.innerHTML = `
+          <div class="col-header">
+            <div class="col-title">
+              <div class="col-dot" style="background:${col.color}"></div>
+              ${col.title}
+              <span class="col-count">${colCards.length}</span>
+            </div>
+            <button class="col-add" onclick="openModal('${col.id}')" title="Add card">+</button>
+          </div>
+          <div class="cards" id="cards-${col.id}" data-col="${col.id}"></div>
+        `;
+        board.appendChild(colEl);
+
+        const cardsEl = colEl.querySelector('.cards');
+
+        cardsEl.addEventListener('dragover', e => {
+          e.preventDefault();
+          cardsEl.classList.add('drag-over');
+        });
+        cardsEl.addEventListener('dragleave', () => cardsEl.classList.remove('drag-over'));
+        cardsEl.addEventListener('drop', e => {
+          e.preventDefault();
+          cardsEl.classList.remove('drag-over');
+          if (dragCard !== null) {
+            const targetCol = cardsEl.dataset.col;
+            const card = cards.find(c => c.id === dragCard);
+            if (card) card.col = targetCol;
+            dragCard = null;
+            render();
+          }
+        });
+
+        colCards.forEach(card => {
+          const tc = TAG_COLORS[card.tag] || TAG_COLORS.Feature;
+          const cardEl = document.createElement('div');
+          cardEl.className = 'card';
+          cardEl.draggable = true;
+          cardEl.dataset.id = card.id;
+          cardEl.innerHTML = `
+            <button class="card-delete" onclick="deleteCard(${card.id})" title="Delete">x</button>
+            <div class="card-tag" style="background:${tc.bg}; color:${tc.text}">${card.tag}</div>
+            <div class="card-title">${card.title}</div>
+            <div class="card-desc">${card.desc}</div>
+            <div class="card-footer">
+              <div class="card-avatar">${card.assignee}</div>
+              <div class="card-due">${card.due}</div>
+            </div>
+          `;
+          cardEl.addEventListener('dragstart', () => {
+            dragCard = card.id;
+            setTimeout(() => cardEl.classList.add('dragging'), 0);
+          });
+          cardEl.addEventListener('dragend', () => cardEl.classList.remove('dragging'));
+          cardsEl.appendChild(cardEl);
+        });
+      });
+
+      // Populate column select
+      const sel = document.getElementById('cardCol');
+      if (sel && sel.options.length === 0) {
+        COLUMNS.forEach(col => {
+          const opt = document.createElement('option');
+          opt.value = col.id;
+          opt.textContent = col.title;
+          sel.appendChild(opt);
+        });
+      }
+    }
+
+    function deleteCard(id) {
+      cards = cards.filter(c => c.id !== id);
+      render();
+    }
+
+    let defaultCol = 'todo';
+
+    function openModal(col) {
+      defaultCol = col || 'todo';
+      const colSel = document.getElementById('cardCol');
+      if (colSel) colSel.value = defaultCol;
+      document.getElementById('modalOverlay').classList.add('open');
+      document.getElementById('cardTitle').focus();
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.getElementById('cardTitle').value   = '';
+      document.getElementById('cardDesc').value    = '';
+      document.getElementById('cardAssignee').value = '';
+    }
+
+    function saveCard() {
+      const title    = document.getElementById('cardTitle').value.trim();
+      const desc     = document.getElementById('cardDesc').value.trim();
+      const col      = document.getElementById('cardCol').value;
+      const tag      = document.getElementById('cardTag').value;
+      const assignee = (document.getElementById('cardAssignee').value.trim().toUpperCase() || '??').slice(0,2);
+      if (!title) { document.getElementById('cardTitle').focus(); return; }
+
+      const today = new Date();
+      const due   = `${today.toLocaleString('default',{month:'short'})} ${today.getDate()+3}`;
+
+      cards.push({ id: nextId++, col, title, desc: desc || 'No description.', tag, assignee, due });
+      closeModal();
+      render();
+    }
+
+    // Close modal on overlay click
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    render();
+  </script>
+</body>
+</html>
