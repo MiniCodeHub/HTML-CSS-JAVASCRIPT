@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>3D Flip Cards</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      background: #0f172a;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 24px;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+      color: #f1f5f9;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 56px;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 28px;
+      max-width: 860px;
+      width: 100%;
+    }
+
+    /* ── Flip card shell ── */
+    .flip-card {
+      perspective: 1200px;
+      height: 300px;
+      cursor: pointer;
+    }
+
+    .flip-inner {
+      position: relative;
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+      border-radius: 20px;
+    }
+
+    /* Flip on hover */
+    .flip-card:hover .flip-inner,
+    .flip-card.flipped .flip-inner {
+      transform: rotateY(180deg);
+    }
+
+    /* Front & back share layout */
+    .flip-front,
+    .flip-back {
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px;
+      text-align: center;
+    }
+
+    .flip-back { transform: rotateY(180deg); }
+
+    /* ── Card themes ── */
+    /* Card 1 - Indigo */
+    .card-1 .flip-front {
+      background: linear-gradient(135deg, #312e81, #4338ca);
+      border: 1px solid #4338ca;
+    }
+    .card-1 .flip-back {
+      background: linear-gradient(135deg, #1e1b4b, #312e81);
+      border: 1px solid #3730a3;
+    }
+
+    /* Card 2 - Emerald */
+    .card-2 .flip-front {
+      background: linear-gradient(135deg, #064e3b, #059669);
+      border: 1px solid #059669;
+    }
+    .card-2 .flip-back {
+      background: linear-gradient(135deg, #022c22, #064e3b);
+      border: 1px solid #047857;
+    }
+
+    /* Card 3 - Amber */
+    .card-3 .flip-front {
+      background: linear-gradient(135deg, #78350f, #d97706);
+      border: 1px solid #d97706;
+    }
+    .card-3 .flip-back {
+      background: linear-gradient(135deg, #451a03, #78350f);
+      border: 1px solid #b45309;
+    }
+
+    /* Card 4 - Rose */
+    .card-4 .flip-front {
+      background: linear-gradient(135deg, #881337, #e11d48);
+      border: 1px solid #e11d48;
+    }
+    .card-4 .flip-back {
+      background: linear-gradient(135deg, #4c0519, #881337);
+      border: 1px solid #be123c;
+    }
+
+    /* ── Front content ── */
+    .card-icon {
+      font-size: 3.5rem;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .card-hint {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── Back content ── */
+    .back-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 12px;
+    }
+
+    .back-title {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    .back-desc {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.65;
+      margin-bottom: 20px;
+    }
+
+    .back-btn {
+      display: inline-block;
+      padding: 8px 22px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-decoration: none;
+    }
+
+    .back-btn:hover { background: rgba(255,255,255,0.25); }
+
+    /* ── Toggle mode button ── */
+    .mode-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+
+    .mode-btn {
+      padding: 8px 20px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid #2d3f55;
+      background: #1e293b;
+      color: #94a3b8;
+      transition: all 0.2s;
+    }
+
+    .mode-btn.active {
+      background: #6366f1;
+      border-color: #6366f1;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>3D Flip Cards</h1>
+  <p class="subtitle">Hover over a card to reveal the back — or use click mode below.</p>
+
+  <div class="mode-row">
+    <span style="font-size:0.8rem;color:#64748b">Trigger:</span>
+    <button class="mode-btn active" id="hoverBtn" onclick="setMode('hover')">Hover</button>
+    <button class="mode-btn"        id="clickBtn" onclick="setMode('click')">Click</button>
+  </div>
+
+  <div class="grid">
+
+    <!-- Card 1 -->
+    <div class="flip-card card-1" onclick="handleClick(this)">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="card-icon">🚀</div>
+          <div class="card-title">Fast Performance</div>
+          <div class="card-hint">Hover to learn more</div>
+        </div>
+        <div class="flip-back">
+          <div class="back-tag">Performance</div>
+          <div class="back-title">Lightning Speed</div>
+          <div class="back-desc">
+            Built on a zero-dependency core with sub-50ms response times.
+            Optimised for edge networks worldwide.
+          </div>
+          <a class="back-btn">Learn More</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="flip-card card-2" onclick="handleClick(this)">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="card-icon">🔒</div>
+          <div class="card-title">Secure by Default</div>
+          <div class="card-hint">Hover to learn more</div>
+        </div>
+        <div class="flip-back">
+          <div class="back-tag">Security</div>
+          <div class="back-title">End-to-End Encrypted</div>
+          <div class="back-desc">
+            AES-256 encryption at rest, TLS 1.3 in transit.
+            SOC 2 Type II certified and GDPR compliant.
+          </div>
+          <a class="back-btn">Learn More</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="flip-card card-3" onclick="handleClick(this)">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="card-icon">📊</div>
+          <div class="card-title">Rich Analytics</div>
+          <div class="card-hint">Hover to learn more</div>
+        </div>
+        <div class="flip-back">
+          <div class="back-tag">Analytics</div>
+          <div class="back-title">Real-time Insights</div>
+          <div class="back-desc">
+            Live dashboards, custom funnels, cohort analysis,
+            and exportable reports — all in one place.
+          </div>
+          <a class="back-btn">Learn More</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="flip-card card-4" onclick="handleClick(this)">
+      <div class="flip-inner">
+        <div class="flip-front">
+          <div class="card-icon">🤝</div>
+          <div class="card-title">Team Collaboration</div>
+          <div class="card-hint">Hover to learn more</div>
+        </div>
+        <div class="flip-back">
+          <div class="back-tag">Collaboration</div>
+          <div class="back-title">Work Together</div>
+          <div class="back-desc">
+            Shared workspaces, granular permissions,
+            real-time co-editing, and Slack integration built in.
+          </div>
+          <a class="back-btn">Learn More</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let mode = 'hover';
+
+    function setMode(m) {
+      mode = m;
+      document.getElementById('hoverBtn').classList.toggle('active', m === 'hover');
+      document.getElementById('clickBtn').classList.toggle('active', m === 'click');
+      // update hints
+      document.querySelectorAll('.card-hint').forEach(el => {
+        el.textContent = m === 'hover' ? 'Hover to learn more' : 'Click to flip';
+      });
+      // un-flip all if switching to hover
+      if (m === 'hover') {
+        document.querySelectorAll('.flip-card').forEach(c => c.classList.remove('flipped'));
+      }
+    }
+
+    function handleClick(card) {
+      if (mode === 'click') card.classList.toggle('flipped');
+    }
+  </script>
+
+</body>
+</html>

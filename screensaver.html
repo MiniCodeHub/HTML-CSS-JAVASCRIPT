@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spotify Screensaver</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000;
+  --text:#fff;
+  --dim:#777;
+  --spotify:#1DB954;
+}
+body{
+  margin:0;
+  height:100vh;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+/* CLOCK */
+#drift-box{
+  text-align:center;
+  transition:transform 10s ease-in-out;
+}
+#time{
+  font-size:12vw;
+  font-weight:800;
+  letter-spacing:-4px;
+}
+#date{
+  font-size:1.5rem;
+  color:var(--dim);
+  letter-spacing:4px;
+  margin-top:10px;
+}
+/* INFO BAR */
+.info-bar{
+  margin-top:20px;
+  display:flex;
+  gap:25px;
+  justify-content:center;
+  background:rgba(255,255,255,0.05);
+  padding:10px 20px;
+  border-radius:30px;
+}
+
+/* SPOTIFY PANEL */
+.spotify-container{
+  position:fixed;
+  left:-440px;
+  top:50%;
+  transform:translateY(-50%);
+  transition:0.4s;
+  z-index:1000;
+}
+.spotify-container:hover{
+  left:0;
+}
+.spotify-handle{
+  position:absolute;
+  right:-45px;
+  top:50%;
+  transform:translateY(-50%);
+  width:45px;
+  height:60px;
+  background:var(--spotify);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:0 12px 12px 0;
+  cursor:pointer;
+}
+
+/* SEARCH */
+.search-box{
+  padding:10px;
+  width:260px;
+  border:none;
+  border-radius:6px;
+  margin:10px 0;
+}
+.search-btn{
+  padding:10px 15px;
+  background:var(--spotify);
+  border:none;
+  color:white;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* SONG LIST */
+#songs{
+  height:200px;
+  overflow-y:auto;
+  margin-top:10px;
+}
+.song{
+  display:flex;
+  gap:10px;
+  margin:8px 0;
+  align-items:center;
+}
+.song img{
+  width:50px;
+  border-radius:6px;
+}
+.song a{
+  color:var(--spotify);
+  text-decoration:none;
+  font-size:14px;
+}
+
+/* NOW PLAYING */
+#nowPlaying{
+  font-size:14px;
+  color:var(--spotify);
+  margin-bottom:10px;
+}
+
+/* CONTROLS */
+.controls{
+  position:fixed;
+  bottom:20px;
+  opacity:0;
+  transition:0.3s;
+}
+body:hover .controls{
+  opacity:0.5;
+}
+button{
+  background:none;
+  border:1px solid #444;
+  color:white;
+  padding:6px 12px;
+  border-radius:4px;
+  cursor:pointer;
+}
+</style>
+</head>
+<body>
+
+<!-- SPOTIFY SEARCH PANEL -->
+<div class="spotify-container">
+  <div class="spotify-handle">
+    <!-- Spotify logo SVG -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 168 168" width="32" height="32">
+      <circle fill="#1DB954" cx="84" cy="84" r="84"/>
+      <path fill="#fff" d="M119.4 119.5c-1.6 2.7-4.9 3.5-7.5 1.8-21-12.9-47.4-15.8-78-10-3 .5-6.1-1.3-6.6-4.3-.5-3 1.3-6.1 4.3-6.6 32.5-5.6 60.2-2.5 82.4 11.3 2.6 1.5 3.4 4.9 1.4 7.8zm9.4-19.2c-1.9 3.2-5.7 4.1-8.8 2.2-24.5-15-61.8-18.3-90.2-10.5-3.5.9-7.2-1.1-8.1-4.6-.9-3.5 1.1-7.2 4.6-8.1 31.7-8.3 71.1-4.6 97.7 11.3 3.2 1.9 4.1 5.7 2.2 8.8zm.7-21.1C103.3 48.1 55.6 45 29.5 55.3c-4 .9-8.3-1.1-9.2-5.1-.9-4 1.1-8.3 5.1-9.2 30.8-6.7 82.1-4.8 113.3 12 4.1 2.2 5.5 7.6 3.3 11.7-2.2 4.1-7.6 5.5-11.7 3.3z"/>
+    </svg>
+  </div>
+  <div style="width:400px;background:#111;padding:20px;border-radius:0 12px 12px 0;">
+    <h3>Spotify Search</h3>
+    <input id="searchBox" class="search-box" placeholder="Search songs">
+    <button class="search-btn" onclick="searchSongs()">Search</button>
+    <div id="songs"></div>
+    <h3>Default Playlist</h3>
+    <div id="nowPlaying">Now Playing: Playlist</div>
+    <iframe style="border-radius:12px"
+      src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M"
+      width="360" height="152" frameborder="0"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy">
+    </iframe>
+  </div>
+</div>
+
+<!-- CLOCK -->
+<div id="drift-box">
+  <div id="time">00:00</div>
+  <div id="date">Loading...</div>
+  <div class="info-bar">
+    <div>☀️ 24°C</div>
+    <div id="battery">🔋 --%</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button onclick="toggleFormat()">12/24H</button>
+  <button onclick="toggleFullScreen()">Fullscreen</button>
+</div>
+
+<script>
+/* CLOCK */
+let is24Hour=true;
+function updateClock(){
+  const now=new Date();
+  let h=now.getHours();
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  let ampm='';
+  if(!is24Hour){
+    ampm=h>=12?' PM':' AM';
+    h=h%12||12;
+  }
+  h=String(h).padStart(2,'0');
+  document.getElementById("time").innerHTML=`${h}:${m}:${s} <span style="font-size:0.2em">${ampm}</span>`;
+  document.getElementById("date").textContent=
+    now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'});
+}
+setInterval(updateClock,1000);
+updateClock();
+
+/* DRIFT */
+const driftBox=document.getElementById("drift-box");
+function drift(){
+  const x=Math.random()*120-60;
+  const y=Math.random()*80-40;
+  driftBox.style.transform=`translate(${x}px,${y}px)`;
+}
+setInterval(drift,10000);
+
+/* BATTERY */
+if('getBattery' in navigator){
+  navigator.getBattery().then(b=>{
+    function update(){
+      document.getElementById("battery").textContent=
+        (b.charging?"⚡ ":"🔋 ")+Math.floor(b.level*100)+"%";
+    }
+    update();
+    b.onlevelchange=update;
+    b.onchargingchange=update;
+  });
+}
+
+/* FULLSCREEN */
+function toggleFullScreen(){
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen();
+  else document.exitFullscreen();
+}
+function toggleFormat(){
+  is24Hour=!is24Hour;
+  updateClock();
+}
+
+/* SPOTIFY SEARCH */
+async function searchSongs(){
+  const query=document.getElementById("searchBox").value;
+  if(!query) return;
+  const res = await fetch(`/search?q=${encodeURIComponent(query)}`);
+  const data = await res.json();
+  displaySongs(data.tracks.items);
+}
+
+function displaySongs(tracks){
+  const container=document.getElementById("songs");
+  container.innerHTML="";
+  tracks.forEach(track=>{
+    const div=document.createElement("div");
+    div.className="song";
+    div.innerHTML=`
+      <img src="${track.album.images[2]?.url || track.album.images[0].url}">
+      <div>
+        <div>${track.name}</div>
+        <div>${track.artists[0].name}</div>
+        <a href="${track.external_urls.spotify}" target="_blank">Play</a>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+</script>
+</body>
+</html>
