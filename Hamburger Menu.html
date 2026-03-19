@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Animated Hamburger Menu</title>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --dur: 0.45s;
+      --ease: cubic-bezier(0.77, 0, 0.175, 1);
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 68px;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .logo {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #0f172a;
+      z-index: 110;
+      transition: color var(--dur);
+    }
+
+    .logo.open { color: #fff; }
+
+    /* ── Hamburger button ── */
+    .hamburger {
+      position: relative;
+      z-index: 110;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      border-radius: 12px;
+      transition: background 0.2s;
+      padding: 0;
+    }
+
+    .hamburger:hover { background: rgba(255,255,255,0.1); }
+
+    .bar {
+      display: block;
+      height: 2.5px;
+      border-radius: 99px;
+      background: #0f172a;
+      transform-origin: center;
+      transition:
+        width    var(--dur) var(--ease),
+        transform var(--dur) var(--ease),
+        opacity  var(--dur) var(--ease),
+        background var(--dur) var(--ease);
+    }
+
+    .bar-1 { width: 28px; }
+    .bar-2 { width: 20px; }
+    .bar-3 { width: 24px; }
+
+    /* Animated state */
+    .hamburger.open .bar { background: #fff; }
+    .hamburger.open .bar-1 {
+      width: 26px;
+      transform: translateY(8.5px) rotate(45deg);
+    }
+    .hamburger.open .bar-2 {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    .hamburger.open .bar-3 {
+      width: 26px;
+      transform: translateY(-8.5px) rotate(-45deg);
+    }
+
+    /* ── Full-screen overlay ── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 90;
+      display: flex;
+      pointer-events: none;
+    }
+
+    /* Animated background panel */
+    .overlay-bg {
+      position: absolute;
+      inset: 0;
+      background: #0f172a;
+      clip-path: circle(0% at calc(100% - 54px) 34px);
+      transition: clip-path 0.65s var(--ease);
+    }
+
+    .overlay.open .overlay-bg {
+      clip-path: circle(150% at calc(100% - 54px) 34px);
+    }
+
+    .overlay.open { pointer-events: all; }
+
+    /* Nav content */
+    .overlay-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+      padding: 100px 48px 64px;
+    }
+
+    /* Nav links */
+    nav ul {
+      list-style: none;
+      margin-bottom: 56px;
+    }
+
+    nav li {
+      overflow: hidden;
+    }
+
+    nav a {
+      display: block;
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      text-decoration: none;
+      line-height: 1.15;
+      padding: 6px 0;
+      transform: translateY(110%);
+      opacity: 0;
+      transition:
+        transform var(--dur) var(--ease),
+        opacity   var(--dur) var(--ease),
+        color 0.2s;
+    }
+
+    nav a:hover { color: #818cf8; }
+
+    nav a .nav-num {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #475569;
+      letter-spacing: 0.1em;
+      vertical-align: super;
+      margin-right: 10px;
+    }
+
+    .overlay.open nav a {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Stagger delays */
+    nav li:nth-child(1) a { transition-delay: 0.05s; }
+    nav li:nth-child(2) a { transition-delay: 0.10s; }
+    nav li:nth-child(3) a { transition-delay: 0.15s; }
+    nav li:nth-child(4) a { transition-delay: 0.20s; }
+    nav li:nth-child(5) a { transition-delay: 0.25s; }
+
+    /* Footer row inside overlay */
+    .overlay-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      transform: translateY(20px);
+      opacity: 0;
+      transition: transform var(--dur) var(--ease) 0.3s,
+                  opacity   var(--dur) var(--ease) 0.3s;
+    }
+
+    .overlay.open .overlay-footer {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    .social-links { display: flex; gap: 16px; }
+
+    .social-links a {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+      text-decoration: none;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .social-links a:hover { color: #818cf8; }
+
+    .overlay-cta {
+      padding: 12px 28px;
+      background: #6366f1;
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .overlay-cta:hover { background: #4f46e5; transform: translateY(-2px); }
+
+    /* ── Page content ── */
+    main {
+      padding-top: 68px;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 60px 24px;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 7vw, 5rem);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #0f172a, #6366f1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero p {
+      font-size: 1.1rem;
+      color: #64748b;
+      max-width: 480px;
+    }
+
+    .hint {
+      margin-top: 48px;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hint::before, .hint::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo" id="logo">Nexus</div>
+
+    <button class="hamburger" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <span class="bar bar-1"></span>
+      <span class="bar bar-2"></span>
+      <span class="bar bar-3"></span>
+    </button>
+  </header>
+
+  <!-- Full-screen overlay -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="overlay-bg"></div>
+    <div class="overlay-content">
+      <nav>
+        <ul>
+          <li><a href="#" onclick="closeMenu()"><span class="nav-num">01</span>Home</a></li>
+          <li><a href="#" onclick="closeMenu()"><span class="nav-num">02</span>About</a></li>
+          <li><a href="#" onclick="closeMenu()"><span class="nav-num">03</span>Work</a></li>
+          <li><a href="#" onclick="closeMenu()"><span class="nav-num">04</span>Services</a></li>
+          <li><a href="#" onclick="closeMenu()"><span class="nav-num">05</span>Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="overlay-footer">
+        <div class="social-links">
+          <a href="#">Twitter</a>
+          <a href="#">GitHub</a>
+          <a href="#">LinkedIn</a>
+          <a href="#">Dribbble</a>
+        </div>
+        <button class="overlay-cta" onclick="closeMenu()">Get in Touch</button>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <section class="hero">
+      <h1>Click the menu<br/>top right</h1>
+      <p>An animated hamburger icon morphs into a close button while a full-screen overlay slides in with staggered nav links.</p>
+      <div class="hint">scroll down to explore</div>
+    </section>
+  </main>
+
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const overlay   = document.getElementById('overlay');
+    const logo      = document.getElementById('logo');
+    let isOpen = false;
+
+    function openMenu() {
+      isOpen = true;
+      hamburger.classList.add('open');
+      hamburger.setAttribute('aria-expanded', 'true');
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      logo.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeMenu() {
+      isOpen = false;
+      hamburger.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      logo.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    hamburger.addEventListener('click', () => isOpen ? closeMenu() : openMenu());
+
+    // Close on Escape key
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && isOpen) closeMenu();
+    });
+  </script>
+
+</body>
+</html>
