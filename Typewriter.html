@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Typewriter Effect</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@600;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:      #08080f;
+      --surface: #0f0f1a;
+      --border:  #1e1e2e;
+      --text:    #e8e8f5;
+      --muted:   #555570;
+      --accent:  #7c6df0;
+      --green:   #4ade80;
+      --amber:   #fbbf24;
+      --pink:    #f472b6;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 64px;
+      padding: 60px 24px;
+    }
+
+    /* ── Section labels ── */
+    .section-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ============================================================
+       DEMO 1 - Hero typewriter
+    ============================================================ */
+    .hero-wrap {
+      text-align: center;
+      max-width: 640px;
+      width: 100%;
+    }
+
+    .hero-prefix {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 5vw, 3.2rem);
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .hero-typed {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 6vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      min-height: 1.2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .typed-text { color: var(--accent); }
+
+    /* ── Cursor ── */
+    .cursor {
+      display: inline-block;
+      width: 3px;
+      height: 1em;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: blink 0.75s step-end infinite;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .cursor.solid { animation: none; opacity: 1; }
+    .cursor.slow   { animation-duration: 1.2s; }
+    .cursor.fast   { animation-duration: 0.4s; }
+    .cursor.bar    { width: 3px; }
+    .cursor.block  { width: 0.6em; border-radius: 3px; opacity: 0.85; }
+    .cursor.under  { width: 0.55em; height: 2px; vertical-align: bottom; border-radius: 1px; }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* ============================================================
+       DEMO 2 - Terminal
+    ============================================================ */
+    .terminal {
+      background: #0b0b12;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 580px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+    }
+
+    .terminal-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 16px;
+      background: #12121e;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #f87171; }
+    .dot-y { background: #fbbf24; }
+    .dot-g { background: #4ade80; }
+
+    .terminal-title {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: 'Syne Mono', monospace;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .terminal-body {
+      padding: 20px 22px 24px;
+      font-family: 'Syne Mono', monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      min-height: 180px;
+    }
+
+    .term-line { display: flex; align-items: flex-start; gap: 8px; }
+
+    .term-prompt { color: var(--green); flex-shrink: 0; }
+    .term-cmd    { color: var(--text); }
+    .term-out    { color: var(--muted); padding-left: 18px; }
+    .term-out.success { color: var(--green); }
+    .term-out.warn    { color: var(--amber); }
+
+    /* ============================================================
+       DEMO 3 - Multi-line card
+    ============================================================ */
+    .card-demo {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 40px;
+      max-width: 540px;
+      width: 100%;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    }
+
+    .card-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .card-typed-line {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      min-height: 1.3em;
+      margin-bottom: 16px;
+    }
+
+    .card-sub {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.65;
+      font-weight: 300;
+      min-height: 3em;
+    }
+
+    /* ============================================================
+       Controls
+    ============================================================ */
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .ctrl {
+      padding: 7px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .ctrl:hover { border-color: var(--accent); color: var(--accent); }
+    .ctrl.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+  </style>
+</head>
+<body>
+
+  <!-- ── Demo 1: Hero ── -->
+  <div class="hero-wrap">
+    <div class="section-label">Demo 1 - Hero Typewriter</div>
+    <div class="hero-prefix">I build things for the</div>
+    <div class="hero-typed">
+      <span class="typed-text" id="heroText"></span>
+      <span class="cursor bar" id="heroCursor"></span>
+    </div>
+  </div>
+
+  <!-- ── Demo 2: Terminal ── -->
+  <div style="width:100%;max-width:580px">
+    <div class="section-label">Demo 2 - Terminal Sequence</div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <span class="dot dot-r"></span>
+        <span class="dot dot-y"></span>
+        <span class="dot dot-g"></span>
+        <span class="terminal-title">zsh -- 80x24</span>
+      </div>
+      <div class="terminal-body" id="termBody"></div>
+    </div>
+  </div>
+
+  <!-- ── Demo 3: Card ── -->
+  <div style="width:100%;max-width:540px">
+    <div class="section-label">Demo 3 - Card Cycling</div>
+    <div class="card-demo">
+      <div class="card-eyebrow">What we do</div>
+      <div class="card-typed-line">
+        <span id="cardTitle"></span><span class="cursor block" id="cardCursor"></span>
+      </div>
+      <div class="card-sub" id="cardSub"></div>
+    </div>
+  </div>
+
+  <!-- ── Controls ── -->
+  <div style="text-align:center">
+    <div class="section-label" style="margin-bottom:12px">Cursor Style</div>
+    <div class="controls">
+      <button class="ctrl active" onclick="setCursorStyle('bar')">Bar |</button>
+      <button class="ctrl"        onclick="setCursorStyle('block')">Block</button>
+      <button class="ctrl"        onclick="setCursorStyle('under')">Underline</button>
+      <button class="ctrl"        onclick="setCursorStyle('fast')">Fast Blink</button>
+      <button class="ctrl"        onclick="setCursorStyle('slow')">Slow Blink</button>
+    </div>
+  </div>
+
+  <script>
+    // ── Typewriter engine ──────────────────────────────────────────────────
+    class Typewriter {
+      constructor(el, opts = {}) {
+        this.el        = el;
+        this.speed     = opts.speed     ?? 60;
+        this.deleteSpeed = opts.deleteSpeed ?? 35;
+        this.pauseAfter  = opts.pauseAfter  ?? 1600;
+        this.pauseBefore = opts.pauseBefore ?? 300;
+        this.queue = [];
+        this.running = false;
+      }
+
+      type(text, opts = {}) {
+        this.queue.push({ type:'type', text, color: opts.color });
+        return this;
+      }
+
+      delete(n) {
+        this.queue.push({ type:'delete', n });
+        return this;
+      }
+
+      deleteAll() {
+        this.queue.push({ type:'deleteAll' });
+        return this;
+      }
+
+      pause(ms) {
+        this.queue.push({ type:'pause', ms });
+        return this;
+      }
+
+      callback(fn) {
+        this.queue.push({ type:'callback', fn });
+        return this;
+      }
+
+      loop() {
+        this.queue.push({ type:'loop' });
+        return this;
+      }
+
+      start() {
+        if (!this.running) { this.running = true; this._run(0); }
+        return this;
+      }
+
+      _sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+      async _run(from) {
+        for (let i = from; i < this.queue.length; i++) {
+          const step = this.queue[i];
+
+          if (step.type === 'type') {
+            for (const ch of step.text) {
+              this.el.textContent += ch;
+              await this._sleep(this.speed + (Math.random() * 20 - 10));
+            }
+          }
+
+          if (step.type === 'delete') {
+            const n = step.n ?? this.el.textContent.length;
+            for (let j = 0; j < n && this.el.textContent.length > 0; j++) {
+              this.el.textContent = this.el.textContent.slice(0, -1);
+              await this._sleep(this.deleteSpeed);
+            }
+          }
+
+          if (step.type === 'deleteAll') {
+            const len = this.el.textContent.length;
+            for (let j = 0; j < len; j++) {
+              this.el.textContent = this.el.textContent.slice(0, -1);
+              await this._sleep(this.deleteSpeed);
+            }
+          }
+
+          if (step.type === 'pause') {
+            await this._sleep(step.ms);
+          }
+
+          if (step.type === 'callback') {
+            step.fn();
+          }
+
+          if (step.type === 'loop') {
+            this._run(0);
+            return;
+          }
+        }
+      }
+    }
+
+    // ── Demo 1: Hero rotation ──────────────────────────────────────────────
+    const heroEl = document.getElementById('heroText');
+    const heroWords = ['web.', 'future.', 'people.', 'fun.', 'impact.'];
+
+    new Typewriter(heroEl, { speed: 80, deleteSpeed: 45, pauseAfter: 2000 })
+      .type(heroWords[0]).pause(1800).deleteAll().pause(300)
+      .type(heroWords[1]).pause(1800).deleteAll().pause(300)
+      .type(heroWords[2]).pause(1800).deleteAll().pause(300)
+      .type(heroWords[3]).pause(1800).deleteAll().pause(300)
+      .type(heroWords[4]).pause(1800).deleteAll().pause(300)
+      .loop()
+      .start();
+
+    // ── Demo 2: Terminal sequence ──────────────────────────────────────────
+    const termBody = document.getElementById('termBody');
+
+    function termLine(cls, prompt, text) {
+      return { cls, prompt, text };
+    }
+
+    const termSteps = [
+      { prompt:'~', cmd:'node --version',   out:'v20.11.0',           outCls:'' },
+      { prompt:'~', cmd:'npm install',       out:'added 312 packages', outCls:'success' },
+      { prompt:'~', cmd:'npm run build',     out:'Build complete!',    outCls:'success' },
+      { prompt:'~', cmd:'git status',        out:'nothing to commit',  outCls:'' },
+      { prompt:'~', cmd:'git push origin main', out:'Branch up to date.', outCls:'success' },
+    ];
+
+    async function runTerminal() {
+      let stepIdx = 0;
+
+      async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+      async function typeStep(step) {
+        // Prompt + command line
+        const line = document.createElement('div');
+        line.className = 'term-line';
+        const promptEl = document.createElement('span');
+        promptEl.className = 'term-prompt';
+        promptEl.textContent = 'user@mac ' + step.prompt + ' %';
+        const cmdEl = document.createElement('span');
+        cmdEl.className = 'term-cmd';
+
+        // Blinking cursor at end of command
+        const cur = document.createElement('span');
+        cur.className = 'cursor bar';
+        line.append(promptEl, cmdEl, cur);
+        termBody.appendChild(line);
+
+        for (const ch of step.cmd) {
+          cmdEl.textContent += ch;
+          await sleep(55 + Math.random() * 20);
+        }
+        await sleep(400);
+        cur.remove();
+
+        // Output line
+        await sleep(200);
+        const out = document.createElement('div');
+        out.className = 'term-out ' + (step.outCls || '');
+        termBody.appendChild(out);
+        for (const ch of step.out) {
+          out.textContent += ch;
+          await sleep(20);
+        }
+        await sleep(600);
+        if (termBody.children.length > 14) {
+          termBody.removeChild(termBody.firstChild);
+          termBody.removeChild(termBody.firstChild);
+        }
+      }
+
+      while (true) {
+        await typeStep(termSteps[stepIdx % termSteps.length]);
+        stepIdx++;
+        await sleep(300);
+      }
+    }
+
+    runTerminal();
+
+    // ── Demo 3: Card cycling ───────────────────────────────────────────────
+    const cardData = [
+      { title: 'Design Systems', sub: 'We craft scalable, token-based design systems that keep your product consistent at any scale.' },
+      { title: 'Full-Stack Engineering', sub: 'From database schema to pixel-perfect UI, we build end-to-end products your users love.' },
+      { title: 'Performance Audits', sub: 'We identify bottlenecks and squeeze every millisecond out of your web application.' },
+      { title: 'Developer Experience', sub: 'Better tooling, cleaner APIs, and DX improvements that make your engineers smile.' },
+    ];
+
+    let cardIdx = 0;
+    const cardTitleEl = document.getElementById('cardTitle');
+    const cardSubEl   = document.getElementById('cardSub');
+
+    async function runCard() {
+      async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+      while (true) {
+        const data = cardData[cardIdx % cardData.length];
+        cardIdx++;
+
+        // Type title
+        for (const ch of data.title) {
+          cardTitleEl.textContent += ch;
+          await sleep(70 + Math.random() * 25);
+        }
+        await sleep(400);
+
+        // Type subtitle
+        for (const ch of data.sub) {
+          cardSubEl.textContent += ch;
+          await sleep(20);
+        }
+        await sleep(2200);
+
+        // Delete sub
+        while (cardSubEl.textContent.length > 0) {
+          cardSubEl.textContent = cardSubEl.textContent.slice(0, -1);
+          await sleep(10);
+        }
+        await sleep(200);
+
+        // Delete title
+        while (cardTitleEl.textContent.length > 0) {
+          cardTitleEl.textContent = cardTitleEl.textContent.slice(0, -1);
+          await sleep(40);
+        }
+        await sleep(350);
+      }
+    }
+
+    runCard();
+
+    // ── Cursor style switcher ──────────────────────────────────────────────
+    function setCursorStyle(style) {
+      document.querySelectorAll('.ctrl').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const cursors = document.querySelectorAll('.cursor');
+      cursors.forEach(c => {
+        c.className = 'cursor ' + style;
+      });
+    }
+  </script>
+
+</body>
+</html>
