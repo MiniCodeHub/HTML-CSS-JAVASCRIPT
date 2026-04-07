@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dark / Light Mode</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    /* -- Design tokens -- */
+    :root[data-theme="light"] {
+      --bg:          #f5f5f0;
+      --surface:     #ffffff;
+      --surface-2:   #f0f0ea;
+      --border:      #e0e0d8;
+      --text:        #18181a;
+      --text-2:      #52525a;
+      --muted:       #a0a0aa;
+      --accent:      #5b4fcf;
+      --accent-glow: rgba(91,79,207,0.18);
+      --toggle-bg:   #e0e0d8;
+      --shadow:      rgba(0,0,0,0.07);
+      --card-hover:  rgba(0,0,0,0.03);
+    }
+
+    :root[data-theme="dark"] {
+      --bg:          #111114;
+      --surface:     #1c1c20;
+      --surface-2:   #26262c;
+      --border:      #30303a;
+      --text:        #f0f0f5;
+      --text-2:      #a0a0b0;
+      --muted:       #55555f;
+      --accent:      #8b7cf8;
+      --accent-glow: rgba(139,124,248,0.2);
+      --toggle-bg:   #8b7cf8;
+      --shadow:      rgba(0,0,0,0.4);
+      --card-hover:  rgba(255,255,255,0.025);
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html { color-scheme: light; }
+    html[data-theme="dark"] { color-scheme: dark; }
+
+    body {
+      font-family: 'Outfit', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background 0.35s ease, color 0.35s ease;
+    }
+
+    /* -- Noise texture overlay -- */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.5;
+    }
+
+    /* -- Header -- */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: background 0.35s, border-color 0.35s;
+    }
+
+    .header-inner {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 28px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      transition: color 0.35s;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-links a {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-2);
+      text-decoration: none;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-links a:hover {
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    /* -- Toggle -- */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .theme-icon {
+      font-size: 1rem;
+      transition: transform 0.4s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+    }
+
+    .toggle-pill {
+      position: relative;
+      width: 50px;
+      height: 27px;
+      cursor: pointer;
+    }
+
+    .toggle-pill input { display: none; }
+
+    .pill-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 99px;
+      background: var(--toggle-bg);
+      transition: background 0.35s ease;
+    }
+
+    .pill-knob {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 21px; height: 21px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+      transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), background 0.35s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    [data-theme="dark"] .pill-knob { transform: translateX(23px); }
+
+    /* -- Main -- */
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 64px 28px 100px;
+    }
+
+    /* -- Hero -- */
+    .hero {
+      text-align: center;
+      margin-bottom: 72px;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: var(--accent-glow);
+      border: 1px solid var(--accent);
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 22px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: background 0.35s, border-color 0.35s, color 0.35s;
+    }
+
+    h1 {
+      font-size: clamp(2.4rem, 5.5vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      margin-bottom: 18px;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-2);
+      max-width: 500px;
+      margin: 0 auto 36px;
+      line-height: 1.7;
+      font-weight: 300;
+      transition: color 0.35s;
+    }
+
+    .hero-cta {
+      display: inline-flex;
+      gap: 12px;
+    }
+
+    .btn {
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px var(--accent-glow); }
+
+    .btn-ghost {
+      background: var(--surface-2);
+      color: var(--text-2);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { background: var(--border); color: var(--text); }
+
+    /* -- Cards -- */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 18px;
+      margin-bottom: 56px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      transition: background 0.35s, border-color 0.35s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 36px var(--shadow);
+      background: var(--surface);
+    }
+
+    .card-icon {
+      font-size: 1.8rem;
+      margin-bottom: 14px;
+    }
+
+    .card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 0.83rem;
+      color: var(--text-2);
+      line-height: 1.6;
+      transition: color 0.35s;
+    }
+
+    /* -- Stats -- */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 56px;
+    }
+
+    @media (max-width: 640px) { .stats-row { grid-template-columns: repeat(2,1fr); } }
+
+    .stat-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      text-align: center;
+      transition: background 0.35s, border-color 0.35s;
+    }
+
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      transition: color 0.35s;
+    }
+
+    .stat-label {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      transition: color 0.35s;
+    }
+
+    /* -- CTA banner -- */
+    .cta-banner {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 44px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      flex-wrap: wrap;
+      transition: background 0.35s, border-color 0.35s;
+    }
+
+    .cta-banner h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.02em; }
+    .cta-banner p  { font-size: 0.85rem; color: var(--text-2); margin-top: 6px; transition: color 0.35s; }
+
+    /* -- Theme status pill -- */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-2);
+      transition: all 0.35s;
+      margin-bottom: 12px;
+    }
+
+    .status-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      transition: background 0.35s;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <div class="logo">Luminos</div>
+      <nav class="nav-links">
+        <a href="#">Features</a>
+        <a href="#">Pricing</a>
+        <a href="#">Docs</a>
+      </nav>
+      <div class="toggle-wrap">
+        <span class="theme-icon" id="sunIcon"></span>
+        <label class="toggle-pill">
+          <input type="checkbox" id="themeToggle"/>
+          <div class="pill-track"></div>
+          <div class="pill-knob" id="knob"></div>
+        </label>
+        <span class="theme-icon" id="moonIcon" style="opacity:0.35"></span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="hero-badge"><span class="status-dot"></span> <span id="themeLabel">Light Mode Active</span></div>
+      <h1>Design for every<br/>kind of light.</h1>
+      <p>Toggle between light and dark mode. Your preference is saved to localStorage and restored on every visit -- even if you close the tab.</p>
+      <div class="hero-cta">
+        <button class="btn btn-primary">Get Started</button>
+        <button class="btn btn-ghost">Learn More</button>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-value">2</div><div class="stat-label">Themes</div></div>
+      <div class="stat-item"><div class="stat-value">0</div><div class="stat-label">Flashes</div></div>
+      <div class="stat-item"><div class="stat-value">350ms</div><div class="stat-label">Transition</div></div>
+      <div class="stat-item"><div class="stat-value">100%</div><div class="stat-label">CSS Vars</div></div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon"></div>
+        <h3>CSS Custom Properties</h3>
+        <p>Every colour, shadow and surface is driven by a CSS variable. Switching themes is a single attribute change on the root element.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <h3>localStorage Persistence</h3>
+        <p>Your preference is written to localStorage on every toggle and read back before the first paint -- no flash, no mismatch.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <h3>System Preference Sync</h3>
+        <p>On first visit with no saved preference, the theme matches your OS setting via <code>prefers-color-scheme</code>.</p>
+      </div>
+      <div class="card">
+        <div class="card-icon"></div>
+        <h3>Smooth Transitions</h3>
+        <p>Every property transitions at 350ms with a consistent ease curve so nothing ever feels abrupt or jarring.</p>
+      </div>
+    </div>
+
+    <div class="cta-banner">
+      <div>
+        <h2>Ready to ship both modes?</h2>
+        <p>Copy this pattern and give your users the experience they expect.</p>
+      </div>
+      <button class="btn btn-primary">View Source</button>
+    </div>
+  </main>
+
+  <script>
+    const KEY   = 'luminos-theme';
+    const root  = document.documentElement;
+    const toggle = document.getElementById('themeToggle');
+    const knob   = document.getElementById('knob');
+    const label  = document.getElementById('themeLabel');
+    const sunIcon  = document.getElementById('sunIcon');
+    const moonIcon = document.getElementById('moonIcon');
+
+    function applyTheme(dark, save = true) {
+      root.setAttribute('data-theme', dark ? 'dark' : 'light');
+      root.style.colorScheme = dark ? 'dark' : 'light';
+      toggle.checked = dark;
+      knob.textContent   = dark ? '' : '';
+      label.textContent  = dark ? 'Dark Mode Active' : 'Light Mode Active';
+      sunIcon.style.opacity  = dark ? '0.35' : '1';
+      moonIcon.style.opacity = dark ? '1'    : '0.35';
+      if (save) localStorage.setItem(KEY, dark ? 'dark' : 'light');
+    }
+
+    toggle.addEventListener('change', () => applyTheme(toggle.checked));
+
+    // Keyboard shortcut: Alt + T
+    document.addEventListener('keydown', e => {
+      if (e.altKey && e.key === 't') applyTheme(!toggle.checked);
+    });
+
+    // Restore saved or use system preference
+    const saved = localStorage.getItem(KEY);
+    if (saved) {
+      applyTheme(saved === 'dark', false);
+    } else {
+      applyTheme(window.matchMedia('(prefers-color-scheme: dark)').matches, false);
+    }
+
+    // Live-sync with OS if no manual override
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!localStorage.getItem(KEY)) applyTheme(e.matches, false);
+    });
+  </script>
+</body>
+</html>
