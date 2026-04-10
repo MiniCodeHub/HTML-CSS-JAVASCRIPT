@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scroll Animations</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:     #08080d;
+      --surf:   #0f0f16;
+      --border: #1e1e2a;
+      --text:   #eeeef5;
+      --muted:  #666674;
+      --acc:    #6c5ce7;
+      --acc2:   #a29bfe;
+      --green:  #00b894;
+      --pink:   #fd79a8;
+      --amber:  #fdcb6e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ================================================================
+       ANIMATION BASE CLASSES
+    ================================================================ */
+
+    /* All animated elements start invisible */
+    .reveal {
+      opacity: 0;
+      transition-property: opacity, transform, filter;
+      transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+      transition-duration: 0.75s;
+    }
+
+    /* Variants */
+    .reveal-up      { transform: translateY(40px); }
+    .reveal-down    { transform: translateY(-30px); }
+    .reveal-left    { transform: translateX(-50px); }
+    .reveal-right   { transform: translateX(50px); }
+    .reveal-scale   { transform: scale(0.88); }
+    .reveal-rotate  { transform: rotate(-4deg) scale(0.92); }
+    .reveal-blur    { filter: blur(10px); transform: translateY(20px); }
+    .reveal-flip    { transform: perspective(600px) rotateX(25deg); }
+
+    /* Stagger siblings */
+    .stagger > *:nth-child(1) { transition-delay: 0.05s; }
+    .stagger > *:nth-child(2) { transition-delay: 0.15s; }
+    .stagger > *:nth-child(3) { transition-delay: 0.25s; }
+    .stagger > *:nth-child(4) { transition-delay: 0.35s; }
+    .stagger > *:nth-child(5) { transition-delay: 0.45s; }
+    .stagger > *:nth-child(6) { transition-delay: 0.55s; }
+
+    /* Active (visible) state -- resets everything */
+    .reveal.in-view {
+      opacity: 1;
+      transform: none;
+      filter: none;
+    }
+
+    /* ================================================================
+       STICKY DEMO LABEL
+    ================================================================ */
+    .section-tag {
+      display: inline-block;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--acc2);
+      background: rgba(108,92,231,0.12);
+      border: 1px solid rgba(108,92,231,0.25);
+      border-radius: 99px;
+      padding: 4px 12px;
+      margin-bottom: 18px;
+    }
+
+    /* ================================================================
+       LAYOUT
+    ================================================================ */
+    section { padding: 100px 24px; max-width: 1000px; margin: 0 auto; }
+    section + section { border-top: 1px solid var(--border); }
+
+    h1, h2 {
+      font-family: 'Syne', sans-serif;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    h1 { font-size: clamp(3rem,7vw,5.5rem); font-weight: 800; margin-bottom: 20px; }
+    h2 { font-size: clamp(1.8rem,4vw,3rem);  font-weight: 700; margin-bottom: 14px; }
+
+    p {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.8;
+      font-weight: 300;
+      max-width: 600px;
+    }
+
+    .accent { color: var(--acc2); }
+    .green  { color: var(--green); }
+    .pink   { color: var(--pink);  }
+    .amber  { color: var(--amber); }
+
+    /* ================================================================
+       HERO
+    ================================================================ */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+      border: none;
+    }
+
+    .hero-sub {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--acc2);
+      margin-bottom: 20px;
+    }
+
+    .hero-desc {
+      margin-top: 22px;
+      font-size: 1.1rem;
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.75;
+    }
+
+    .scroll-hint {
+      margin-top: 56px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.75rem;
+      color: var(--border);
+      letter-spacing: 0.1em;
+    }
+
+    .scroll-line {
+      width: 40px;
+      height: 1px;
+      background: var(--border);
+      animation: scroll-pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes scroll-pulse {
+      0%,100% { opacity: 0.3; }
+      50%      { opacity: 1; }
+    }
+
+    /* ================================================================
+       CARD GRID (stagger demo)
+    ================================================================ */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      border-color: var(--acc);
+      box-shadow: 0 0 0 1px var(--acc), 0 8px 32px rgba(108,92,231,0.15);
+    }
+
+    .card-icon { font-size: 2rem; margin-bottom: 14px; }
+    .card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 8px; }
+    .card p  { font-size: 0.82rem; }
+
+    /* ================================================================
+       HORIZONTAL LINES (left/right reveal)
+    ================================================================ */
+    .lr-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-top: 40px;
+    }
+
+    @media (max-width: 640px) { .lr-pair { grid-template-columns: 1fr; } }
+
+    .lr-box {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 32px;
+    }
+
+    .lr-box h3 { font-family:'Syne',sans-serif; font-size:1.1rem; margin-bottom:10px; }
+    .lr-box p  { font-size:0.83rem; }
+
+    /* ================================================================
+       SCALE / BLUR / ROTATE demos
+    ================================================================ */
+    .demo-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 36px;
+    }
+
+    .demo-chip {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 24px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .demo-chip strong { display: block; font-size:1.1rem; margin-bottom:4px; color:var(--text); }
+
+    /* ================================================================
+       COUNTER NUMBERS (count-up on reveal)
+    ================================================================ */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .stat-box {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--acc2);
+    }
+
+    .stat-label { font-size:0.72rem; color:var(--muted); margin-top:4px; text-transform:uppercase; letter-spacing:0.1em; }
+
+    /* ================================================================
+       TIMELINE (sequential reveal)
+    ================================================================ */
+    .timeline { margin-top: 40px; position:relative; padding-left:24px; }
+
+    .timeline::before {
+      content:'';
+      position:absolute;
+      left:0; top:8px; bottom:8px;
+      width:2px;
+      background: var(--border);
+      border-radius:2px;
+    }
+
+    .tl-item {
+      position: relative;
+      padding: 0 0 32px 24px;
+    }
+
+    .tl-item::before {
+      content:'';
+      position:absolute;
+      left:-5px; top:6px;
+      width:12px; height:12px;
+      border-radius:50%;
+      background: var(--acc);
+      border:2px solid var(--bg);
+    }
+
+    .tl-year { font-size:0.72rem; font-weight:700; color:var(--acc2); letter-spacing:0.08em; margin-bottom:4px; }
+    .tl-item h3 { font-size:0.95rem; font-weight:600; margin-bottom:6px; }
+    .tl-item p  { font-size:0.82rem; }
+
+    /* ================================================================
+       PROGRESS BARS (width animation)
+    ================================================================ */
+    .skill-list { margin-top: 36px; display:flex; flex-direction:column; gap:16px; }
+
+    .skill-row { }
+    .skill-meta { display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:6px; }
+    .skill-label { font-weight:500; }
+    .skill-pct { color:var(--muted); }
+    .skill-track { height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+    .skill-bar {
+      height:100%;
+      background:linear-gradient(90deg, var(--acc), var(--acc2));
+      border-radius:99px;
+      width:0%;
+      transition: width 1s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    /* ================================================================
+       FOOTER
+    ================================================================ */
+    footer {
+      text-align:center;
+      padding:48px 24px;
+      font-size:0.75rem;
+      color:var(--border);
+      border-top:1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<!-- -- Hero -- -->
+<div class="hero">
+  <div class="hero-sub reveal reveal-up">Scroll Animations</div>
+  <h1 class="reveal reveal-up" style="transition-delay:0.1s">
+    Elements that<br/><span class="accent">wake up</span><br/>as you scroll.
+  </h1>
+  <p class="hero-desc reveal reveal-blur" style="transition-delay:0.25s">
+    Seven different animation variants -- fade-up, fade-left, scale, blur, rotate, flip, and stagger -- all driven by a single IntersectionObserver. No libraries. No scroll events.
+  </p>
+  <div class="scroll-hint reveal reveal-up" style="transition-delay:0.4s">
+    <span class="scroll-line"></span>
+    <span>Scroll to explore</span>
+  </div>
+</div>
+
+<!-- -- Section 1: Stagger fade-up -- -->
+<section>
+  <span class="section-tag reveal reveal-left">Stagger Fade-Up</span>
+  <h2 class="reveal reveal-up">Cards that arrive<br/>one after another.</h2>
+  <p class="reveal reveal-up" style="transition-delay:0.1s">Each child element in a <code>.stagger</code> container receives an incremental transition-delay, creating a cascade effect.</p>
+
+  <div class="card-grid stagger">
+    <div class="card reveal reveal-up">
+      <div class="card-icon"></div>
+      <h3>Fast by default</h3>
+      <p>IntersectionObserver fires once per element, with zero scroll-event overhead.</p>
+    </div>
+    <div class="card reveal reveal-up">
+      <div class="card-icon"></div>
+      <h3>Fully configurable</h3>
+      <p>Set threshold, root margin and delay per element with data attributes.</p>
+    </div>
+    <div class="card reveal reveal-up">
+      <div class="card-icon"></div>
+      <h3>Accessible</h3>
+      <p>Respects <code>prefers-reduced-motion</code> -- animations disable cleanly.</p>
+    </div>
+    <div class="card reveal reveal-up">
+      <div class="card-icon"></div>
+      <h3>Zero dependencies</h3>
+      <p>Pure HTML, CSS and one small IntersectionObserver. Ship it anywhere.</p>
+    </div>
+  </div>
+</section>
+
+<!-- -- Section 2: Left / Right -- -->
+<section>
+  <span class="section-tag reveal reveal-up">Directional Reveal</span>
+  <h2 class="reveal reveal-up">Slide in from<br/>either side.</h2>
+  <div class="lr-pair">
+    <div class="lr-box reveal reveal-left">
+      <h3 class="green">From the left</h3>
+      <p>This card slides in from the left margin. Great for feature lists or comparison layouts.</p>
+    </div>
+    <div class="lr-box reveal reveal-right">
+      <h3 class="pink">From the right</h3>
+      <p>Mirror effect -- this one comes from the right. Opposites create rhythm and balance.</p>
+    </div>
+  </div>
+</section>
+
+<!-- -- Section 3: Scale / Blur / Rotate / Flip -- -->
+<section>
+  <span class="section-tag reveal reveal-up">Transform Variants</span>
+  <h2 class="reveal reveal-up">More ways to reveal.</h2>
+  <p class="reveal reveal-up" style="transition-delay:0.1s">Mix and match variants by combining CSS classes.</p>
+  <div class="demo-row stagger">
+    <div class="demo-chip reveal reveal-scale">   <strong>Scale</strong>   reveal-scale   </div>
+    <div class="demo-chip reveal reveal-blur">    <strong>Blur</strong>    reveal-blur    </div>
+    <div class="demo-chip reveal reveal-rotate">  <strong>Rotate</strong>  reveal-rotate  </div>
+    <div class="demo-chip reveal reveal-flip">    <strong>Flip</strong>    reveal-flip    </div>
+    <div class="demo-chip reveal reveal-down">    <strong>Down</strong>    reveal-down    </div>
+    <div class="demo-chip reveal reveal-up">      <strong>Up</strong>      reveal-up      </div>
+  </div>
+</section>
+
+<!-- -- Section 4: Count-up numbers -- -->
+<section>
+  <span class="section-tag reveal reveal-up">Count-Up on Reveal</span>
+  <h2 class="reveal reveal-up">Numbers that<br/>count themselves in.</h2>
+  <div class="stats-grid stagger">
+    <div class="stat-box reveal reveal-scale">
+      <div class="stat-num" data-target="98">0</div>
+      <div class="stat-label">Satisfaction %</div>
+    </div>
+    <div class="stat-box reveal reveal-scale">
+      <div class="stat-num" data-target="12400">0</div>
+      <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-box reveal reveal-scale">
+      <div class="stat-num" data-target="350">0</div>
+      <div class="stat-label">Components</div>
+    </div>
+    <div class="stat-box reveal reveal-scale">
+      <div class="stat-num" data-target="99">0</div>
+      <div class="stat-label">Uptime %</div>
+    </div>
+  </div>
+</section>
+
+<!-- -- Section 5: Timeline -- -->
+<section>
+  <span class="section-tag reveal reveal-up">Sequential Timeline</span>
+  <h2 class="reveal reveal-up">A story told<br/>one beat at a time.</h2>
+  <div class="timeline stagger">
+    <div class="tl-item reveal reveal-left">
+      <div class="tl-year">2021</div>
+      <h3>Project founded</h3>
+      <p>Started as a weekend experiment. Two engineers, one Figma file, and a lot of coffee.</p>
+    </div>
+    <div class="tl-item reveal reveal-left">
+      <div class="tl-year">2022</div>
+      <h3>First public release</h3>
+      <p>v1.0 shipped to Product Hunt. Reached #3 product of the day with zero marketing.</p>
+    </div>
+    <div class="tl-item reveal reveal-left">
+      <div class="tl-year">2023</div>
+      <h3>Series A raised</h3>
+      <p>Closed a $4M seed round. Grew the team to twelve and shipped real-time collaboration.</p>
+    </div>
+    <div class="tl-item reveal reveal-left">
+      <div class="tl-year">2024</div>
+      <h3>10,000 teams</h3>
+      <p>Crossed the 10k team milestone and launched our enterprise tier with SSO and RBAC.</p>
+    </div>
+  </div>
+</section>
+
+<!-- -- Section 6: Skill bars -- -->
+<section>
+  <span class="section-tag reveal reveal-up">Animated Skill Bars</span>
+  <h2 class="reveal reveal-up">Progress bars that<br/>fill on scroll.</h2>
+  <div class="skill-list">
+    <div class="skill-row reveal reveal-left"  data-pct="92">
+      <div class="skill-meta"><span class="skill-label">TypeScript</span><span class="skill-pct">92%</span></div>
+      <div class="skill-track"><div class="skill-bar"></div></div>
+    </div>
+    <div class="skill-row reveal reveal-left" style="transition-delay:0.1s" data-pct="85">
+      <div class="skill-meta"><span class="skill-label">React</span><span class="skill-pct">85%</span></div>
+      <div class="skill-track"><div class="skill-bar"></div></div>
+    </div>
+    <div class="skill-row reveal reveal-left" style="transition-delay:0.2s" data-pct="78">
+      <div class="skill-meta"><span class="skill-label">Node.js</span><span class="skill-pct">78%</span></div>
+      <div class="skill-track"><div class="skill-bar"></div></div>
+    </div>
+    <div class="skill-row reveal reveal-left" style="transition-delay:0.3s" data-pct="70">
+      <div class="skill-meta"><span class="skill-label">PostgreSQL</span><span class="skill-pct">70%</span></div>
+      <div class="skill-track"><div class="skill-bar"></div></div>
+    </div>
+    <div class="skill-row reveal reveal-left" style="transition-delay:0.4s" data-pct="65">
+      <div class="skill-meta"><span class="skill-label">Rust</span><span class="skill-pct">65%</span></div>
+      <div class="skill-track"><div class="skill-bar"></div></div>
+    </div>
+  </div>
+</section>
+
+<footer>Built with pure HTML, CSS and a single IntersectionObserver -- no scroll listeners, no libraries.</footer>
+
+<script>
+  // -- Core IntersectionObserver ------------------------------------------
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const el = entry.target;
+      el.classList.add('in-view');
+
+      // Count-up numbers
+      const numEl = el.querySelector('[data-target]') || (el.dataset.target ? el : null);
+      if (numEl && numEl.dataset.target && !prefersReduced) {
+        countUp(numEl, +numEl.dataset.target);
+      }
+
+      // Skill bars
+      if (el.classList.contains('skill-row') && !prefersReduced) {
+        const bar = el.querySelector('.skill-bar');
+        const pct = el.dataset.pct;
+        if (bar && pct) setTimeout(() => { bar.style.width = pct + '%'; }, 300);
+      }
+
+      io.unobserve(el);
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+
+  document.querySelectorAll('.reveal, .skill-row').forEach(el => io.observe(el));
+
+  // Also observe stat-boxes that contain [data-target]
+  document.querySelectorAll('[data-target]').forEach(el => {
+    const box = el.closest('.reveal');
+    if (!box) io.observe(el);
+  });
+
+  // -- Count-up helper ----------------------------------------------------
+  function countUp(el, target) {
+    const duration = 1200;
+    const start    = performance.now();
+    const from     = 0;
+
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const ease     = 1 - Math.pow(1 - progress, 3); // ease-out-cubic
+      el.textContent = Math.round(from + (target - from) * ease).toLocaleString();
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  // -- Reduced motion: show everything instantly --------------------------
+  if (prefersReduced) {
+    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in-view'));
+    document.querySelectorAll('.skill-bar').forEach(bar => {
+      const pct = bar.closest('.skill-row')?.dataset.pct;
+      if (pct) bar.style.width = pct + '%';
+    });
+    document.querySelectorAll('[data-target]').forEach(el => {
+      el.textContent = Number(el.dataset.target).toLocaleString();
+    });
+  }
+</script>
+</body>
+</html>
