@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Before / After Comparator</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:     #0b0b12;
+      --surf:   #12121c;
+      --border: #1e1e2e;
+      --text:   #eeeefc;
+      --muted:  #606078;
+      --acc:    #6c5ce7;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 20px 80px;
+    }
+
+    header { text-align:center; margin-bottom:48px; }
+
+    header h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem,4vw,3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    header p { font-size:0.875rem; color:var(--muted); font-weight:300; }
+
+    .accent { color: #a29bfe; }
+
+    /* -- Gallery tabs -- */
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 28px;
+    }
+
+    .tab {
+      padding: 7px 18px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--surf);
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+
+    .tab:hover { border-color: var(--acc); color: #a29bfe; }
+    .tab.active { background: var(--acc); border-color: var(--acc); color: #fff; }
+
+    /* -- Comparator wrapper -- */
+    .comparator-wrap {
+      width: 100%;
+      max-width: 780px;
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow: 0 24px 72px rgba(0,0,0,0.5);
+      position: relative;
+    }
+
+    /* -- Comparator itself -- */
+    .comparator {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      user-select: none;
+      cursor: col-resize;
+      overflow: hidden;
+    }
+
+    /* The "after" panel -- full width underneath */
+    .panel-after,
+    .panel-before {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* The "before" panel -- clipped to left side */
+    .panel-before {
+      clip-path: inset(0 50% 0 0);
+      transition: none;
+    }
+
+    /* -- Divider -- */
+    .divider {
+      position: absolute;
+      top: 0; bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 3px;
+      background: rgba(255,255,255,0.9);
+      z-index: 20;
+      pointer-events: none;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.3);
+    }
+
+    /* Handle */
+    .handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 46px;
+      height: 46px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.5);
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      pointer-events: none;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .comparator:active .handle {
+      transform: translate(-50%, -50%) scale(1.08);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+    }
+
+    .arrow {
+      width: 0; height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      flex-shrink: 0;
+    }
+
+    .arrow-left  { border-right:  8px solid #333; }
+    .arrow-right { border-left:   8px solid #333; }
+
+    /* -- Labels -- */
+    .label {
+      position: absolute;
+      top: 14px;
+      padding: 5px 12px;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.15);
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .label-before { left: 14px; }
+    .label-after  { right: 14px; }
+
+    /* -- Bottom bar -- */
+    .comparator-footer {
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .footer-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .footer-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* Pct pill */
+    .pct-pill {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      background: rgba(108,92,231,0.15);
+      border: 1px solid rgba(108,92,231,0.3);
+      border-radius: 99px;
+      color: #a29bfe;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* Keyboard hint */
+    .key-hint {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .key {
+      background: var(--border);
+      border: 1px solid #2a2a3e;
+      border-radius: 5px;
+      padding: 2px 6px;
+      font-family: 'DM Sans', monospace;
+      font-size: 0.65rem;
+    }
+
+    /* -- Demo panels (CSS gradients & shapes) -- */
+
+    /* Demo 1: Design before/after */
+    .demo-1-before { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+    .demo-1-after  { background: linear-gradient(135deg, #0f3460 0%, #533483 100%); }
+
+    /* Demo 2: Day/Night */
+    .demo-2-before { background: linear-gradient(160deg, #87ceeb 0%, #ffd700 60%, #ff8c00 100%); }
+    .demo-2-after  { background: linear-gradient(160deg, #0a0a2e 0%, #1a1a4e 60%, #2d1b69 100%); }
+
+    /* Demo 3: Blur/Sharp */
+    .demo-3-before { filter: blur(4px); background: linear-gradient(135deg, #11998e, #38ef7d); }
+    .demo-3-after  { background: linear-gradient(135deg, #11998e, #38ef7d); }
+
+    /* Demo 4: Grayscale/Color */
+    .demo-4-before { background: linear-gradient(135deg, #555, #999, #666, #aaa); filter: grayscale(1); }
+    .demo-4-after  { background: linear-gradient(135deg, #f093fb, #f5576c, #4facfe, #00f2fe); }
+
+    /* SVG scene elements */
+    .scene { position:absolute; inset:0; overflow:hidden; }
+
+    /* -- Extra panels below -- */
+    .panels-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      max-width: 780px;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    @media(max-width:520px){ .panels-grid { grid-template-columns:1fr; } }
+
+    .mini-comparator-wrap {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .mini-label {
+      padding: 10px 14px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .mini-comparator {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      cursor: col-resize;
+      overflow: hidden;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Before <span class="accent">/</span> After</h1>
+    <p>Drag the handle to compare. Use arrow keys for precision. Works on touch too.</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="loadDemo(0,this)">Design</button>
+    <button class="tab"        onclick="loadDemo(1,this)">Day / Night</button>
+    <button class="tab"        onclick="loadDemo(2,this)">Blur / Sharp</button>
+    <button class="tab"        onclick="loadDemo(3,this)">B&W / Color</button>
+  </div>
+
+  <!-- Main comparator -->
+  <div class="comparator-wrap">
+    <div class="comparator" id="mainComp"
+      onmousedown="startDrag(event,'mainComp')"
+      ontouchstart="startDrag(event,'mainComp')">
+
+      <!-- After (back) -->
+      <div class="panel-after" id="mainAfter">
+        <div class="scene" id="mainAfterScene"></div>
+      </div>
+
+      <!-- Before (front, clipped) -->
+      <div class="panel-before" id="mainBefore">
+        <div class="scene" id="mainBeforeScene"></div>
+      </div>
+
+      <!-- Labels -->
+      <div class="label label-before" id="mainLabelB">Before</div>
+      <div class="label label-after"  id="mainLabelA">After</div>
+
+      <!-- Divider + handle -->
+      <div class="divider" id="mainDivider">
+        <div class="handle">
+          <div class="arrow arrow-left"></div>
+          <div class="arrow arrow-right"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="comparator-footer">
+      <div>
+        <div class="footer-title" id="mainTitle">Dark Theme Redesign</div>
+        <div class="footer-sub">Drag the slider to compare both states</div>
+      </div>
+      <div class="key-hint">
+        <span class="key"></span><span class="key"></span>
+        <span>arrow keys</span>
+      </div>
+      <div class="pct-pill" id="mainPct">50%</div>
+    </div>
+  </div>
+
+  <!-- Mini comparators grid -->
+  <div class="panels-grid">
+    <div class="mini-comparator-wrap">
+      <div class="mini-comparator" id="mini1"
+        onmousedown="startDrag(event,'mini1')"
+        ontouchstart="startDrag(event,'mini1')">
+        <div class="panel-after demo-2-after"></div>
+        <div class="panel-before demo-2-before" id="mini1Before"></div>
+        <div class="label label-before" style="font-size:0.6rem;padding:3px 8px">Day</div>
+        <div class="label label-after"  style="font-size:0.6rem;padding:3px 8px">Night</div>
+        <div class="divider" id="mini1Divider">
+          <div class="handle" style="width:30px;height:30px">
+            <div class="arrow arrow-left" style="border-right-width:5px;border-top-width:4px;border-bottom-width:4px"></div>
+            <div class="arrow arrow-right" style="border-left-width:5px;border-top-width:4px;border-bottom-width:4px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mini-label">Day / Night</div>
+    </div>
+
+    <div class="mini-comparator-wrap">
+      <div class="mini-comparator" id="mini2"
+        onmousedown="startDrag(event,'mini2')"
+        ontouchstart="startDrag(event,'mini2')">
+        <div class="panel-after demo-4-after"></div>
+        <div class="panel-before demo-4-before" id="mini2Before"></div>
+        <div class="label label-before" style="font-size:0.6rem;padding:3px 8px">B&W</div>
+        <div class="label label-after"  style="font-size:0.6rem;padding:3px 8px">Color</div>
+        <div class="divider" id="mini2Divider">
+          <div class="handle" style="width:30px;height:30px">
+            <div class="arrow arrow-left" style="border-right-width:5px;border-top-width:4px;border-bottom-width:4px"></div>
+            <div class="arrow arrow-right" style="border-left-width:5px;border-top-width:4px;border-bottom-width:4px"></div>
+          </div>
+        </div>
+      </div>
+      <div class="mini-label">B&W / Color</div>
+    </div>
+  </div>
+
+  <script>
+    // -- Demo content --------------------------------------------------------
+    const DEMOS = [
+      {
+        title: 'Dark Theme Redesign',
+        beforeClass: 'demo-1-before', afterClass: 'demo-1-after',
+        labelB: 'Before', labelA: 'After',
+        beforeHTML: `<svg width="100%" height="100%" viewBox="0 0 780 438" xmlns="http://www.w3.org/2000/svg">
+          <rect x="20" y="20" width="740" height="50" rx="8" fill="#0d0d1a" opacity=".8"/>
+          <rect x="30" y="32" width="80" height="26" rx="5" fill="#2a2a40"/>
+          <rect x="540" y="32" width="60" height="26" rx="5" fill="#2a2a40"/>
+          <rect x="610" y="32" width="60" height="26" rx="5" fill="#2a2a40"/>
+          <rect x="680" y="32" width="60" height="26" rx="5" fill="#3a3a5a"/>
+          <rect x="20" y="86" width="360" height="200" rx="12" fill="#0d0d1a" opacity=".7"/>
+          <rect x="36" y="102" width="200" height="16" rx="4" fill="#3a3a5a"/>
+          <rect x="36" y="126" width="280" height="10" rx="3" fill="#2a2a40"/>
+          <rect x="36" y="144" width="250" height="10" rx="3" fill="#2a2a40"/>
+          <rect x="36" y="162" width="270" height="10" rx="3" fill="#2a2a40"/>
+          <rect x="36" y="240" width="100" height="32" rx="8" fill="#3a3a5a"/>
+          <rect x="400" y="86" width="360" height="200" rx="12" fill="#0d0d1a" opacity=".7"/>
+          <rect x="416" y="102" width="140" height="16" rx="4" fill="#3a3a5a"/>
+          <rect x="416" y="126" width="320" height="10" rx="3" fill="#2a2a40"/>
+          <rect x="416" y="144" width="290" height="10" rx="3" fill="#2a2a40"/>
+          <rect x="416" y="240" width="100" height="32" rx="8" fill="#3a3a5a"/>
+        </svg>`,
+        afterHTML: `<svg width="100%" height="100%" viewBox="0 0 780 438" xmlns="http://www.w3.org/2000/svg">
+          <defs><linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#6c5ce7"/><stop offset="100%" style="stop-color:#a29bfe"/></linearGradient></defs>
+          <rect x="20" y="20" width="740" height="50" rx="8" fill="#0f0f1a" opacity=".95"/>
+          <rect x="30" y="32" width="80" height="26" rx="5" fill="#6c5ce7" opacity=".4"/>
+          <rect x="540" y="32" width="60" height="26" rx="5" fill="#1e1e30"/>
+          <rect x="610" y="32" width="60" height="26" rx="5" fill="#1e1e30"/>
+          <rect x="680" y="32" width="60" height="26" rx="5" fill="url(#g1)"/>
+          <rect x="20" y="86" width="360" height="200" rx="12" fill="#12122a" opacity=".9" stroke="#6c5ce7" stroke-width="1" stroke-opacity=".4"/>
+          <rect x="36" y="102" width="200" height="16" rx="4" fill="url(#g1)"/>
+          <rect x="36" y="126" width="280" height="10" rx="3" fill="#2a2a45"/>
+          <rect x="36" y="144" width="250" height="10" rx="3" fill="#2a2a45"/>
+          <rect x="36" y="162" width="270" height="10" rx="3" fill="#2a2a45"/>
+          <rect x="36" y="240" width="100" height="32" rx="8" fill="url(#g1)"/>
+          <rect x="400" y="86" width="360" height="200" rx="12" fill="#12122a" opacity=".9" stroke="#a29bfe" stroke-width="1" stroke-opacity=".3"/>
+          <rect x="416" y="102" width="140" height="16" rx="4" fill="url(#g1)"/>
+          <rect x="416" y="126" width="320" height="10" rx="3" fill="#2a2a45"/>
+          <rect x="416" y="144" width="290" height="10" rx="3" fill="#2a2a45"/>
+          <rect x="416" y="240" width="100" height="32" rx="8" fill="#a29bfe" opacity=".7"/>
+        </svg>`,
+      },
+      {
+        title: 'Day / Night Scene', beforeClass:'demo-2-before', afterClass:'demo-2-after',
+        labelB:'Day', labelA:'Night', beforeHTML:'', afterHTML:'',
+      },
+      {
+        title: 'Blur vs Sharp', beforeClass:'demo-3-before', afterClass:'demo-3-after',
+        labelB:'Blurred', labelA:'Sharp', beforeHTML:'', afterHTML:'',
+      },
+      {
+        title: 'B&W vs Full Color', beforeClass:'demo-4-before', afterClass:'demo-4-after',
+        labelB:'B&W', labelA:'Color', beforeHTML:'', afterHTML:'',
+      },
+    ];
+
+    const positions = {};   // compId -> percentage (0-100)
+
+    function setPos(compId, pct) {
+      pct = Math.max(0, Math.min(100, pct));
+      positions[compId] = pct;
+
+      const before   = document.getElementById(compId === 'mainComp' ? 'mainBefore'   : compId + 'Before');
+      const divider  = document.getElementById(compId === 'mainComp' ? 'mainDivider'  : compId + 'Divider');
+      const pctPill  = document.getElementById('mainPct');
+
+      if (before)  before.style.clipPath  = `inset(0 ${100 - pct}% 0 0)`;
+      if (divider) { divider.style.left = pct + '%'; }
+      if (compId === 'mainComp' && pctPill) pctPill.textContent = Math.round(pct) + '%';
+    }
+
+    // -- Drag logic ----------------------------------------------------------
+    let activeComp = null;
+
+    function startDrag(e, compId) {
+      activeComp = compId;
+      e.preventDefault();
+      updateFromEvent(e, compId);
+    }
+
+    function updateFromEvent(e, compId) {
+      const comp = document.getElementById(compId);
+      const rect = comp.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const pct = ((clientX - rect.left) / rect.width) * 100;
+      setPos(compId, pct);
+    }
+
+    document.addEventListener('mousemove', e => { if (activeComp) updateFromEvent(e, activeComp); });
+    document.addEventListener('touchmove', e => { if (activeComp) { e.preventDefault(); updateFromEvent(e, activeComp); } }, { passive:false });
+    document.addEventListener('mouseup',   () => { activeComp = null; });
+    document.addEventListener('touchend',  () => { activeComp = null; });
+
+    // -- Keyboard ------------------------------------------------------------
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft')  setPos('mainComp', (positions['mainComp'] ?? 50) - (e.shiftKey ? 10 : 2));
+      if (e.key === 'ArrowRight') setPos('mainComp', (positions['mainComp'] ?? 50) + (e.shiftKey ? 10 : 2));
+    });
+
+    // -- Demo loading --------------------------------------------------------
+    function loadDemo(idx, btn) {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      const d = DEMOS[idx];
+      const beforeEl = document.getElementById('mainBefore');
+      const afterEl  = document.getElementById('mainAfter');
+      const beforeSc = document.getElementById('mainBeforeScene');
+      const afterSc  = document.getElementById('mainAfterScene');
+
+      // Classes
+      beforeEl.className = 'panel-before ' + d.beforeClass;
+      afterEl.className  = 'panel-after '  + d.afterClass;
+
+      // SVG content
+      beforeSc.innerHTML = d.beforeHTML;
+      afterSc.innerHTML  = d.afterHTML;
+
+      document.getElementById('mainTitle').textContent    = d.title;
+      document.getElementById('mainLabelB').textContent   = d.labelB;
+      document.getElementById('mainLabelA').textContent   = d.labelA;
+      setPos('mainComp', 50);
+    }
+
+    // -- Init ----------------------------------------------------------------
+    loadDemo(0, document.querySelector('.tab.active'));
+    setPos('mini1', 50);
+    setPos('mini2', 50);
+  </script>
+</body>
+</html>
