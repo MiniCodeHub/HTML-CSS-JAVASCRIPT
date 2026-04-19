@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Context Menu</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400&display=swap');
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:       #0c0c14;
+      --surf:     #14141e;
+      --surf2:    #1c1c28;
+      --border:   #24243a;
+      --border2:  #2e2e46;
+      --text:     #eeeef8;
+      --muted:    #606078;
+      --acc:      #6c5ce7;
+      --acc2:     #a29bfe;
+      --red:      #ff6b81;
+      --green:    #00cec9;
+      --amber:    #fdcb6e;
+      --menu-w:   220px;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* -- Grid background -- */
+    body::before {
+      content:'';
+      position:fixed;
+      inset:0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 48px 48px;
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    /* -- Canvas content -- */
+    .canvas-content {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .hero-text {
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .hero-text h1 {
+      font-size: clamp(2rem,5vw,4rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      margin-bottom: 10px;
+    }
+
+    .hero-text p {
+      font-size: 0.9rem;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .acc-text { color: var(--acc2); }
+
+    /* -- Draggable cards -- */
+    .card {
+      position: absolute;
+      background: var(--surf);
+      border: 1px solid var(--border2);
+      border-radius: 16px;
+      padding: 20px 24px;
+      cursor: default;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      width: 220px;
+      transition: box-shadow 0.2s, border-color 0.2s;
+      user-select: none;
+    }
+
+    .card:hover {
+      border-color: var(--acc);
+      box-shadow: 0 12px 40px rgba(108,92,231,0.2);
+    }
+
+    .card-icon { font-size: 1.5rem; margin-bottom: 8px; }
+    .card-title { font-size: 0.875rem; font-weight: 600; margin-bottom: 4px; }
+    .card-sub { font-size: 0.75rem; color: var(--muted); }
+
+    /* Hint bar */
+    .hint-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surf);
+      border: 1px solid var(--border2);
+      border-radius: 99px;
+      padding: 8px 20px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+      pointer-events: none;
+    }
+
+    .hint-key {
+      background: var(--border2);
+      border: 1px solid #3a3a54;
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--acc2);
+    }
+
+    /* -- Toast -- */
+    .toast-wrap {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: none;
+    }
+
+    .toast {
+      background: var(--surf);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 0.8rem;
+      color: var(--text);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      animation: toast-in 0.25s ease, toast-out 0.3s ease 1.7s forwards;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    @keyframes toast-in  { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:none; } }
+    @keyframes toast-out { from { opacity:1; } to { opacity:0; transform:translateX(16px); } }
+
+    /* -- Context menu -- */
+    .ctx-menu {
+      position: fixed;
+      z-index: 100;
+      width: var(--menu-w);
+      background: var(--surf);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 5px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+      display: none;
+      animation: menu-in 0.15s cubic-bezier(0.22,1,0.36,1);
+      transform-origin: top left;
+    }
+
+    .ctx-menu.open { display: block; }
+
+    @keyframes menu-in {
+      from { opacity:0; transform:scale(0.94) translateY(-4px); }
+      to   { opacity:1; transform:none; }
+    }
+
+    /* Menu sections */
+    .ctx-sep {
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    .ctx-label {
+      padding: 4px 10px 2px;
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .ctx-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text);
+      transition: background 0.12s, color 0.12s;
+      position: relative;
+    }
+
+    .ctx-item:hover { background: var(--surf2); }
+
+    .ctx-item.danger { color: var(--red); }
+    .ctx-item.danger:hover { background: rgba(255,107,129,0.1); }
+
+    .ctx-item.success { color: var(--green); }
+    .ctx-item.success:hover { background: rgba(0,206,201,0.1); }
+
+    .ctx-icon {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+
+    .ctx-shortcut {
+      margin-left: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--muted);
+    }
+
+    .ctx-arrow {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.65rem;
+    }
+
+    /* Submenu */
+    .ctx-submenu {
+      position: absolute;
+      left: calc(var(--menu-w) + 4px);
+      top: -5px;
+      width: var(--menu-w);
+      background: var(--surf);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      padding: 5px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+      display: none;
+      animation: menu-in 0.12s ease;
+    }
+
+    .ctx-item:hover .ctx-submenu { display: block; }
+
+    /* Disabled */
+    .ctx-item.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    /* Color swatches in submenu */
+    .color-row {
+      display: flex;
+      gap: 6px;
+      padding: 6px 10px;
+      flex-wrap: wrap;
+    }
+
+    .color-swatch {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+
+    .color-swatch:hover { transform: scale(1.2); border-color: rgba(255,255,255,0.4); }
+  </style>
+</head>
+<body>
+
+  <!-- Toast container -->
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <!-- Canvas -->
+  <div class="canvas-content" id="canvas">
+    <div class="hero-text">
+      <h1>Right-click <span class="acc-text">anywhere</span></h1>
+      <p>Context menus adapt to what you click on.</p>
+    </div>
+  </div>
+
+  <!-- Floating cards (right-click targets) -->
+  <div class="card" id="card1" style="top:12%;left:6%" data-type="card" data-name="Design System">
+    <div class="card-icon"></div>
+    <div class="card-title">Design System</div>
+    <div class="card-sub">12 components</div>
+  </div>
+
+  <div class="card" id="card2" style="top:20%;right:7%" data-type="card" data-name="API Docs">
+    <div class="card-icon"></div>
+    <div class="card-title">API Docs</div>
+    <div class="card-sub">REST + GraphQL</div>
+  </div>
+
+  <div class="card" id="card3" style="bottom:22%;left:8%" data-type="card" data-name="Analytics">
+    <div class="card-icon"></div>
+    <div class="card-title">Analytics</div>
+    <div class="card-sub">14.2k events/day</div>
+  </div>
+
+  <div class="card" id="card4" style="bottom:18%;right:9%" data-type="card" data-name="Settings">
+    <div class="card-icon"></div>
+    <div class="card-title">Settings</div>
+    <div class="card-sub">User preferences</div>
+  </div>
+
+  <!-- Hint bar -->
+  <div class="hint-bar">
+    <span class="hint-key">Right Click</span> anywhere or on a card for context menus
+  </div>
+
+  <!-- Context menus -->
+
+  <!-- Canvas context menu (right-click on empty area) -->
+  <div class="ctx-menu" id="ctxCanvas">
+    <div class="ctx-label">Canvas</div>
+    <div class="ctx-item" onclick="action('New file created','')"><span class="ctx-icon"></span>New File<span class="ctx-shortcut">Ctrl N</span></div>
+    <div class="ctx-item" onclick="action('New folder created','')"><span class="ctx-icon"></span>New Folder</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-label">Clipboard</div>
+    <div class="ctx-item" onclick="action('Pasted from clipboard','')"><span class="ctx-icon"></span>Paste<span class="ctx-shortcut">Ctrl V</span></div>
+    <div class="ctx-item disabled"><span class="ctx-icon"></span>Cut<span class="ctx-shortcut">Ctrl X</span></div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-label">View</div>
+    <div class="ctx-item" onclick="action('Sorted by name','')"><span class="ctx-icon"></span>Sort by Name</div>
+    <div class="ctx-item" onclick="action('Sorted by date','')"><span class="ctx-icon"></span>Sort by Date</div>
+    <div class="ctx-item">
+      <span class="ctx-icon"></span>Background Color
+      <span class="ctx-arrow"></span>
+      <div class="ctx-submenu">
+        <div class="ctx-label">Pick a color</div>
+        <div class="color-row">
+          <div class="color-swatch" style="background:#0c0c14" onclick="setBg('#0c0c14')"></div>
+          <div class="color-swatch" style="background:#0f0f1f" onclick="setBg('#0f0f1f')"></div>
+          <div class="color-swatch" style="background:#1a0a2e" onclick="setBg('#1a0a2e')"></div>
+          <div class="color-swatch" style="background:#0a1a2e" onclick="setBg('#0a1a2e')"></div>
+          <div class="color-swatch" style="background:#0a2e1a" onclick="setBg('#0a2e1a')"></div>
+          <div class="color-swatch" style="background:#2e1a0a" onclick="setBg('#2e1a0a')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="action('Display settings opened','')"><span class="ctx-icon"></span>Display Settings</div>
+  </div>
+
+  <!-- Card context menu -->
+  <div class="ctx-menu" id="ctxCard">
+    <div class="ctx-label" id="ctxCardLabel">Card</div>
+    <div class="ctx-item" onclick="action('Opened','')"><span class="ctx-icon"></span>Open<span class="ctx-shortcut">Enter</span></div>
+    <div class="ctx-item" onclick="action('Opened in new tab','')"><span class="ctx-icon"></span>Open in New Tab</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-label">Actions</div>
+    <div class="ctx-item" onclick="action('Copied to clipboard','')"><span class="ctx-icon"></span>Copy Link<span class="ctx-shortcut">Ctrl C</span></div>
+    <div class="ctx-item" onclick="action('Pinned to top','')"><span class="ctx-icon"></span>Pin to Top</div>
+    <div class="ctx-item" onclick="action('Starred','')"><span class="ctx-icon"></span>Star</div>
+    <div class="ctx-item">
+      <span class="ctx-icon"></span>Add Label
+      <span class="ctx-arrow"></span>
+      <div class="ctx-submenu">
+        <div class="ctx-item success" onclick="action('Labelled: Active','')"><span class="ctx-icon"></span>Active</div>
+        <div class="ctx-item" onclick="action('Labelled: Draft','')" style="color:#74b9ff"><span class="ctx-icon"></span>Draft</div>
+        <div class="ctx-item" onclick="action('Labelled: Archived','')" style="color:#b2bec3"><span class="ctx-icon"></span>Archive</div>
+        <div class="ctx-item" onclick="action('Labelled: Urgent','')" style="color:var(--red)"><span class="ctx-icon"></span>Urgent</div>
+      </div>
+    </div>
+    <div class="ctx-item" onclick="action('Shared','')"><span class="ctx-icon"></span>Share</div>
+    <div class="ctx-sep"></div>
+    <div class="ctx-item" onclick="action('Renamed','')"><span class="ctx-icon"></span>Rename<span class="ctx-shortcut">F2</span></div>
+    <div class="ctx-item" onclick="action('Duplicated','')"><span class="ctx-icon"></span>Duplicate</div>
+    <div class="ctx-item danger" onclick="action('Deleted','')"><span class="ctx-icon"></span>Delete<span class="ctx-shortcut">Del</span></div>
+  </div>
+
+  <script>
+    const ctxCanvas = document.getElementById('ctxCanvas');
+    const ctxCard   = document.getElementById('ctxCard');
+    let activeMenu  = null;
+
+    function closeAll() {
+      ctxCanvas.classList.remove('open');
+      ctxCard.classList.remove('open');
+      activeMenu = null;
+    }
+
+    function openMenu(menu, x, y) {
+      closeAll();
+      menu.classList.add('open');
+      activeMenu = menu;
+
+      // Keep within viewport
+      const mw = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--menu-w'));
+      const mh = menu.offsetHeight || 320;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const left = x + mw > vw ? vw - mw - 8 : x;
+      const top  = y + mh > vh ? vh - mh - 8 : y;
+      menu.style.left = left + 'px';
+      menu.style.top  = top  + 'px';
+    }
+
+    document.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      const card = e.target.closest('[data-type="card"]');
+      if (card) {
+        document.getElementById('ctxCardLabel').textContent = card.dataset.name || 'Card';
+        openMenu(ctxCard, e.clientX, e.clientY);
+      } else {
+        openMenu(ctxCanvas, e.clientX, e.clientY);
+      }
+    });
+
+    document.addEventListener('click', e => {
+      if (activeMenu && !activeMenu.contains(e.target)) closeAll();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeAll();
+    });
+
+    // -- Toast helper --------------------------------------------------------
+    function action(msg, icon) {
+      closeAll();
+      const wrap = document.getElementById('toastWrap');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+      wrap.appendChild(toast);
+      setTimeout(() => toast.remove(), 2100);
+    }
+
+    function setBg(color) {
+      document.body.style.backgroundColor = color;
+      action('Background changed', '');
+    }
+
+    // -- Drag cards ----------------------------------------------------------
+    document.querySelectorAll('.card').forEach(card => {
+      let startX, startY, ox, oy, dragging = false;
+
+      card.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        dragging = true;
+        startX = e.clientX; startY = e.clientY;
+        ox = card.offsetLeft; oy = card.offsetTop;
+        card.style.transition = 'none';
+        card.style.zIndex = 5;
+        e.preventDefault();
+      });
+
+      document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        card.style.left = (ox + e.clientX - startX) + 'px';
+        card.style.top  = (oy + e.clientY - startY) + 'px';
+        card.style.right = 'auto'; card.style.bottom = 'auto';
+      });
+
+      document.addEventListener('mouseup', () => {
+        if (dragging) { dragging = false; card.style.transition = ''; card.style.zIndex = ''; }
+      });
+    });
+  </script>
+</body>
+</html>
