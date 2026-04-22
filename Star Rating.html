@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Star Rating</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:      #09090f;
+      --surf:    #111118;
+      --surf2:   #18181f;
+      --border:  #222230;
+      --text:    #eeeefc;
+      --muted:   #55556a;
+      --star-on: #fbbf24;
+      --star-off:#2a2a38;
+      --acc:     #6c5ce7;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 56px 20px 80px;
+      gap: 40px;
+    }
+
+    header { text-align: center; }
+    header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 6px; }
+    header p  { font-size: 0.85rem; color: var(--muted); font-weight: 300; }
+
+    /* -- Rating widget -- */
+    .rating-widget {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .widget-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+    }
+
+    /* -- Star strip -- */
+    .stars {
+      display: flex;
+      gap: 4px;
+      cursor: pointer;
+      width: fit-content;
+    }
+
+    .stars.lg  .star-wrap { width: 44px; height: 44px; }
+    .stars.md  .star-wrap { width: 34px; height: 34px; }
+    .stars.sm  .star-wrap { width: 26px; height: 26px; }
+    .stars.xs  .star-wrap { width: 20px; height: 20px; }
+
+    /* Each star is a container for two halves */
+    .star-wrap {
+      position: relative;
+      display: inline-block;
+      flex-shrink: 0;
+      transition: transform 0.12s;
+    }
+
+    .stars:not(.readonly) .star-wrap:hover { transform: scale(1.18); }
+
+    /* SVG star halves */
+    .star-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Half interaction zones */
+    .half-left, .half-right {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 50%;
+      z-index: 2;
+    }
+
+    .half-left  { left: 0; }
+    .half-right { right: 0; }
+
+    /* -- Labels -- */
+    .rating-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      min-height: 1.2em;
+      transition: color 0.2s;
+    }
+
+    .rating-label.active { color: var(--star-on); font-weight: 600; }
+
+    /* -- Value display -- */
+    .rating-value {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .rv-num {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      color: var(--star-on);
+      line-height: 1;
+    }
+
+    .rv-max { font-size: 1rem; color: var(--muted); }
+
+    /* -- Submit button -- */
+    .submit-btn {
+      padding: 10px 24px;
+      background: var(--acc);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s, opacity 0.2s;
+      width: fit-content;
+    }
+
+    .submit-btn:hover   { background: #5a4bd1; }
+    .submit-btn:active  { transform: scale(0.96); }
+    .submit-btn:disabled{ opacity: 0.35; cursor: not-allowed; }
+
+    /* -- Review cards demo -- */
+    .review-cards {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .review-card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px 20px;
+    }
+
+    .review-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .reviewer {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .reviewer-name { font-size: 0.875rem; font-weight: 600; }
+    .review-date   { font-size: 0.72rem; color: var(--muted); }
+    .review-body   { font-size: 0.82rem; color: var(--muted); line-height: 1.6; font-weight: 300; }
+
+    /* -- Distribution bars -- */
+    .distrib {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .dist-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+    }
+
+    .dist-label { color: var(--muted); width: 30px; text-align: right; }
+
+    .dist-track {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .dist-fill {
+      height: 100%;
+      background: var(--star-on);
+      border-radius: 99px;
+      transition: width 0.5s cubic-bezier(0.22,1,0.36,1);
+    }
+
+    .dist-count { color: var(--muted); width: 20px; }
+
+    /* -- Toast -- */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      transition: transform 0.3s cubic-bezier(0.22,1,0.36,1);
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Star Rating</h1>
+    <p>Click for full stars, hover the left half for half-stars.</p>
+  </header>
+
+  <!-- -- Widget 1: Main interactive rating -- -->
+  <div class="rating-widget">
+    <div class="widget-title">Rate your experience</div>
+    <div class="rating-value">
+      <span class="rv-num" id="mainNum">0</span>
+      <span class="rv-max">/ 5</span>
+    </div>
+    <div class="stars lg" id="mainStars" data-max="5" data-half="true"></div>
+    <div class="rating-label" id="mainLabel">Click a star to rate</div>
+    <button class="submit-btn" id="mainSubmit" disabled onclick="submitRating()">Submit Rating</button>
+  </div>
+
+  <!-- -- Widget 2: 10-star rating -- -->
+  <div class="rating-widget">
+    <div class="widget-title">10-star scale (no half stars)</div>
+    <div class="rating-value">
+      <span class="rv-num" id="tenNum">0</span>
+      <span class="rv-max">/ 10</span>
+    </div>
+    <div class="stars md" id="tenStars" data-max="10" data-half="false"></div>
+    <div class="rating-label" id="tenLabel">How likely are you to recommend us?</div>
+  </div>
+
+  <!-- -- Widget 3: Existing reviews -- -->
+  <div class="review-cards">
+    <div class="review-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-size:2.2rem;font-weight:800;color:var(--star-on)">4.3</div>
+          <div style="font-size:0.72rem;color:var(--muted)">124 reviews</div>
+        </div>
+        <div class="stars xs readonly" id="summaryStars" data-max="5" data-half="true" data-value="4.3"></div>
+      </div>
+      <div class="distrib" id="distribBars"></div>
+    </div>
+
+    <div class="review-card" id="reviewCard1">
+      <div class="review-top">
+        <div class="reviewer">
+          <div class="avatar" style="background:#6c5ce7">AW</div>
+          <div>
+            <div class="reviewer-name">Alice Walker</div>
+            <div class="review-date">March 2025</div>
+          </div>
+        </div>
+        <div class="stars sm readonly" data-max="5" data-half="true" data-value="5"></div>
+      </div>
+      <p class="review-body">Absolutely exceptional. The attention to detail is unmatched -- I have tried a dozen similar products and this is by far the best one on the market.</p>
+    </div>
+
+    <div class="review-card">
+      <div class="review-top">
+        <div class="reviewer">
+          <div class="avatar" style="background:#00cec9">BK</div>
+          <div>
+            <div class="reviewer-name">Bob Kim</div>
+            <div class="review-date">February 2025</div>
+          </div>
+        </div>
+        <div class="stars sm readonly" data-max="5" data-half="true" data-value="3.5"></div>
+      </div>
+      <p class="review-body">Good overall but a few rough edges. The core functionality is solid; I just wish the onboarding were a bit smoother.</p>
+    </div>
+
+    <div class="review-card">
+      <div class="review-top">
+        <div class="reviewer">
+          <div class="avatar" style="background:#fd79a8">CM</div>
+          <div>
+            <div class="reviewer-name">Carol Mendes</div>
+            <div class="review-date">January 2025</div>
+          </div>
+        </div>
+        <div class="stars sm readonly" data-max="5" data-half="true" data-value="4.5"></div>
+      </div>
+      <p class="review-body">Really impressed with the speed improvements in the latest update. The half-star precision is a nice touch -- finally a rating that reflects nuance.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // -- Star SVG paths -------------------------------------------------------
+    const STAR_PATH = 'M12 2 L15.09 8.26 L22 9.27 L17 14.14 L18.18 21.02 L12 17.77 L5.82 21.02 L7 14.14 L2 9.27 L8.91 8.26 Z';
+
+    function makeStar(fillLeft, fillRight, size) {
+      const id = 'g' + Math.random().toString(36).slice(2);
+      const on  = 'var(--star-on)';
+      const off = 'var(--star-off)';
+      return `
+        <svg class="star-svg" viewBox="0 0 24 24" fill="none">
+          <defs>
+            <linearGradient id="${id}" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="50%" stop-color="${fillLeft  ? on : off}"/>
+              <stop offset="50%" stop-color="${fillRight ? on : off}"/>
+            </linearGradient>
+          </defs>
+          <path d="${STAR_PATH}" fill="url(#${id})" stroke="none"/>
+        </svg>`;
+    }
+
+    // -- Build a star strip -------------------------------------------------
+    function buildStars(container, opts) {
+      const max      = opts.max || 5;
+      const half     = opts.half !== false;
+      const readonly = opts.readonly || false;
+      const value    = opts.value || 0;
+      let   current  = value;
+      let   hover    = -1;
+
+      container.innerHTML = '';
+
+      function render(val) {
+        container.innerHTML = '';
+        for (let i = 1; i <= max; i++) {
+          const wrap = document.createElement('div');
+          wrap.className = 'star-wrap';
+
+          const leftFill  = val >= i - 0.5;
+          const rightFill = val >= i;
+          wrap.innerHTML  = makeStar(leftFill, rightFill);
+
+          if (!readonly) {
+            const lh = document.createElement('div');
+            lh.className = 'half-left';
+            const rh = document.createElement('div');
+            rh.className = 'half-right';
+
+            lh.addEventListener('mouseenter', () => {
+              hover = half ? i - 0.5 : i;
+              render(hover);
+              updateLabel(container, hover, max, false);
+            });
+            rh.addEventListener('mouseenter', () => {
+              hover = i;
+              render(hover);
+              updateLabel(container, hover, max, false);
+            });
+            lh.addEventListener('click', (e) => { e.stopPropagation(); current = half ? i - 0.5 : i; render(current); updateLabel(container, current, max, true); onSelect(container, current); });
+            rh.addEventListener('click', (e) => { e.stopPropagation(); current = i; render(current); updateLabel(container, current, max, true); onSelect(container, current); });
+
+            wrap.appendChild(lh);
+            wrap.appendChild(rh);
+          }
+          container.appendChild(wrap);
+        }
+      }
+
+      container.addEventListener('mouseleave', () => {
+        hover = -1;
+        render(current);
+        updateLabel(container, current, max, current > 0);
+      });
+
+      render(current);
+    }
+
+    // -- Label text ---------------------------------------------------------
+    const LABELS_5  = ['','Terrible','Poor','Average','Good','Excellent'];
+    const HALF_LABELS = { 0.5:'Just awful', 1.5:'Pretty bad', 2.5:'Mediocre', 3.5:'Pretty good', 4.5:'Almost perfect' };
+
+    function updateLabel(container, val, max, committed) {
+      const labelId = container.id + 'Label';
+      const labelEl = document.getElementById(labelId);
+      if (!labelEl) return;
+      if (val === 0) { labelEl.textContent = 'Click a star to rate'; labelEl.classList.remove('active'); return; }
+      labelEl.classList.toggle('active', committed);
+      if (max === 5 && HALF_LABELS[val]) labelEl.textContent = HALF_LABELS[val];
+      else if (max === 5) labelEl.textContent = LABELS_5[Math.floor(val)] || '';
+      else labelEl.textContent = `${val} / ${max}`;
+    }
+
+    function onSelect(container, val) {
+      const numId = container.id + 'Num';
+      const numEl = document.getElementById(numId);
+      if (numEl) numEl.textContent = val;
+
+      if (container.id === 'mainStars') {
+        document.getElementById('mainSubmit').disabled = false;
+      }
+    }
+
+    // -- Init all star strips ------------------------------------------------
+    function initAll() {
+      document.querySelectorAll('.stars').forEach(el => {
+        const max      = +el.dataset.max || 5;
+        const half     = el.dataset.half !== 'false';
+        const readonly = el.classList.contains('readonly');
+        const value    = +el.dataset.value || 0;
+        buildStars(el, { max, half, readonly, value });
+      });
+
+      // Distribution bars
+      const dist = [
+        { label:'5', count:68, pct:55 },
+        { label:'4', count:30, pct:24 },
+        { label:'3', count:15, pct:12 },
+        { label:'2', count:7,  pct:6  },
+        { label:'1', count:4,  pct:3  },
+      ];
+      const wrap = document.getElementById('distribBars');
+      if (wrap) {
+        wrap.innerHTML = dist.map(d => `
+          <div class="dist-row">
+            <span class="dist-label">${d.label}</span>
+            <div class="dist-track"><div class="dist-fill" style="width:${d.pct}%"></div></div>
+            <span class="dist-count">${d.count}</span>
+          </div>`).join('');
+      }
+    }
+
+    // -- Submit --------------------------------------------------------------
+    function submitRating() {
+      const val = document.getElementById('mainNum').textContent;
+      showToast(`Thank you! You rated us ${val} / 5 stars.`);
+      document.getElementById('mainSubmit').disabled = true;
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2600);
+    }
+
+    initAll();
+  </script>
+</body>
+</html>
