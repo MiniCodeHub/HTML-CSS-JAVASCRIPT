@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Floating Label Inputs</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    :root {
+      --bg:     #f5f5f0;
+      --surf:   #ffffff;
+      --border: #d8d8d0;
+      --text:   #18181a;
+      --muted:  #8a8a82;
+      --acc:    #2d6a4f;
+      --err:    #c0392b;
+      --warn:   #d68910;
+      --ok:     #1e8449;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 56px 20px 80px;
+      gap: 44px;
+    }
+
+    header { text-align: center; }
+    header h1 { font-size: 1.8rem; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 6px; }
+    header p  { font-size: 0.85rem; color: var(--muted); font-weight: 300; }
+
+    /* -- Card -- */
+    .card {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 36px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+    }
+
+    .card-title {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+
+    .form-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    /* ================================================================
+       FLOATING LABEL FIELD
+    ================================================================ */
+    .field {
+      position: relative;
+    }
+
+    /* The actual input / select / textarea */
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 22px 14px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      color: var(--text);
+      background: var(--surf);
+      outline: none;
+      transition: border-color 0.22s, box-shadow 0.22s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 90px;
+      padding-top: 24px;
+    }
+
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      border-color: var(--acc);
+      box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+    }
+
+    /* Floating label */
+    .field label {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.9rem;
+      color: var(--muted);
+      pointer-events: none;
+      transition:
+        top 0.22s cubic-bezier(0.4,0,0.2,1),
+        font-size 0.22s,
+        color 0.22s,
+        transform 0.22s;
+      transform-origin: left top;
+      white-space: nowrap;
+    }
+
+    /* Label for textarea: start at top */
+    .field.textarea-field label {
+      top: 18px;
+      transform: none;
+    }
+
+    /* Floated state: input has value or is focused */
+    .field input:focus + label,
+    .field input:not(:placeholder-shown) + label,
+    .field select:focus + label,
+    .field select.has-value + label,
+    .field textarea:focus + label,
+    .field textarea:not(:placeholder-shown) + label {
+      top: 8px;
+      font-size: 0.68rem;
+      color: var(--acc);
+      transform: none;
+    }
+
+    /* Focus color */
+    .field input:focus + label,
+    .field select:focus + label,
+    .field textarea:focus + label {
+      color: var(--acc);
+    }
+
+    /* Prefix icon */
+    .field.has-icon input { padding-left: 42px; }
+    .field.has-icon label { left: 42px; }
+
+    .field-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: var(--muted);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Suffix button (e.g. show/hide password) */
+    .field-suffix {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: inherit;
+      font-weight: 500;
+      padding: 0;
+      transition: color 0.15s;
+    }
+
+    .field-suffix:hover { color: var(--acc); }
+
+    /* -- Validation states -- */
+    .field.error input, .field.error select, .field.error textarea {
+      border-color: var(--err);
+      box-shadow: 0 0 0 3px rgba(192,57,43,0.1);
+    }
+
+    .field.error label { color: var(--err) !important; }
+
+    .field.success input, .field.success select, .field.success textarea {
+      border-color: var(--ok);
+      box-shadow: 0 0 0 3px rgba(30,132,73,0.08);
+    }
+
+    .field.success label { color: var(--ok) !important; }
+
+    /* Status icons inside field */
+    .field-status {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    /* Helper text */
+    .field-helper {
+      font-size: 0.73rem;
+      margin-top: 5px;
+      padding: 0 2px;
+      min-height: 1em;
+      transition: color 0.2s;
+    }
+
+    .field-helper.hint    { color: var(--muted); }
+    .field-helper.error   { color: var(--err);   }
+    .field-helper.success { color: var(--ok);    }
+
+    /* -- Character counter -- */
+    .counter-wrap {
+      display: flex;
+      justify-content: flex-end;
+      font-size: 0.68rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .counter-wrap.warn { color: var(--warn); }
+    .counter-wrap.over { color: var(--err);  }
+
+    /* -- Submit -- */
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--acc);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      margin-top: 6px;
+    }
+
+    .submit-btn:hover  { background: #245a41; }
+    .submit-btn:active { transform: scale(0.98); }
+
+    /* -- Select custom arrow -- */
+    .select-arrow {
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    /* -- Dark variant -- */
+    .card.dark {
+      background: #12121c;
+      border-color: #24243a;
+    }
+
+    .card.dark .card-title { color: #55556a; }
+
+    .card.dark .field input,
+    .card.dark .field select,
+    .card.dark .field textarea {
+      background: #1a1a28;
+      border-color: #2a2a40;
+      color: #eeeefc;
+    }
+
+    .card.dark .field label { color: #606078; }
+
+    .card.dark .field input:focus,
+    .card.dark .field select:focus,
+    .card.dark .field textarea:focus {
+      border-color: #a29bfe;
+      box-shadow: 0 0 0 3px rgba(162,155,254,0.15);
+    }
+
+    .card.dark .field input:focus + label,
+    .card.dark .field input:not(:placeholder-shown) + label,
+    .card.dark .field select.has-value + label,
+    .card.dark .field textarea:not(:placeholder-shown) + label {
+      color: #a29bfe;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Floating Label Inputs</h1>
+    <p>Labels animate from placeholder position to floating label on focus or when a value is entered.</p>
+  </header>
+
+  <!-- -- Card 1: Registration form -- -->
+  <div class="card">
+    <div class="card-title">Registration Form</div>
+    <div class="form-grid">
+
+      <div class="row-2">
+        <div class="field">
+          <input type="text" id="fname" placeholder=" " oninput="validateName(this,'fnameHelper')"/>
+          <label for="fname">First Name</label>
+          <div class="field-helper hint" id="fnameHelper">Required</div>
+        </div>
+        <div class="field">
+          <input type="text" id="lname" placeholder=" "/>
+          <label for="lname">Last Name</label>
+          <div class="field-helper hint"></div>
+        </div>
+      </div>
+
+      <div class="field has-icon">
+        <span class="field-icon"></span>
+        <input type="email" id="email" placeholder=" "
+          oninput="validateEmail(this,'emailHelper')"/>
+        <label for="email">Email Address</label>
+        <div class="field-helper hint" id="emailHelper">We'll never share your email</div>
+      </div>
+
+      <div class="field">
+        <input type="tel" id="phone" placeholder=" "/>
+        <label for="phone">Phone Number (optional)</label>
+        <div class="field-helper hint"></div>
+      </div>
+
+      <div class="field has-icon">
+        <span class="field-icon"></span>
+        <input type="password" id="pw" placeholder=" "
+          oninput="validatePassword(this,'pwHelper','pwStatus')"
+          style="padding-right:60px"/>
+        <label for="pw">Password</label>
+        <button class="field-suffix" type="button" onclick="togglePw('pw',this)">Show</button>
+        <div class="field-helper hint" id="pwHelper">Min 8 chars, one number</div>
+      </div>
+
+      <div class="field">
+        <select id="country" placeholder=" " onchange="handleSelect(this)">
+          <option value="" disabled selected hidden></option>
+          <option>United States</option>
+          <option>United Kingdom</option>
+          <option>Canada</option>
+          <option>Australia</option>
+          <option>Germany</option>
+          <option>India</option>
+        </select>
+        <label for="country">Country</label>
+        <span class="select-arrow">&#9660;</span>
+        <div class="field-helper hint"></div>
+      </div>
+
+      <div class="field textarea-field">
+        <textarea id="bio" placeholder=" " maxlength="160"
+          oninput="updateCounter(this,'bioCounter',160)"></textarea>
+        <label for="bio">Bio</label>
+        <div class="counter-wrap" id="bioCounter">0 / 160</div>
+      </div>
+
+      <button class="submit-btn" onclick="submitForm()">Create Account</button>
+    </div>
+  </div>
+
+  <!-- -- Card 2: Dark theme -- -->
+  <div class="card dark">
+    <div class="card-title">Dark Theme Variant</div>
+    <div class="form-grid">
+
+      <div class="field has-icon">
+        <span class="field-icon"></span>
+        <input type="text" id="dkUser" placeholder=" "/>
+        <label for="dkUser">Username</label>
+        <div class="field-helper hint" style="color:#55556a"></div>
+      </div>
+
+      <div class="field has-icon">
+        <span class="field-icon"></span>
+        <input type="email" id="dkEmail" placeholder=" "/>
+        <label for="dkEmail">Email</label>
+        <div class="field-helper hint" style="color:#55556a"></div>
+      </div>
+
+      <div class="field has-icon">
+        <span class="field-icon"></span>
+        <input type="password" id="dkPw" placeholder=" " style="padding-right:60px"/>
+        <label for="dkPw">Password</label>
+        <button class="field-suffix" type="button"
+          style="color:#606078"
+          onclick="togglePw('dkPw',this)">Show</button>
+      </div>
+
+      <button class="submit-btn" style="background:#6c5ce7" onclick="showToast('Signed in!')">Sign In</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" style="
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:#18181a;color:#eeeefc;padding:10px 22px;border-radius:10px;
+    font-size:0.82rem;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.3);
+    transition:transform 0.3s;pointer-events:none;"></div>
+
+  <script>
+    function validateName(input, helperId) {
+      const field  = input.closest('.field');
+      const helper = document.getElementById(helperId);
+      if (!input.value.trim()) {
+        field.className = 'field error';
+        helper.className = 'field-helper error';
+        helper.textContent = 'First name is required.';
+      } else {
+        field.className = 'field success';
+        helper.className = 'field-helper success';
+        helper.textContent = 'Looks good!';
+      }
+    }
+
+    function validateEmail(input, helperId) {
+      const field  = input.closest('.field has-icon') || input.closest('.field');
+      const helper = document.getElementById(helperId);
+      const valid  = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.value);
+      if (!input.value) {
+        input.closest('.field').className = 'field has-icon';
+        helper.className = 'field-helper hint';
+        helper.textContent = "We'll never share your email";
+      } else if (valid) {
+        input.closest('.field').className = 'field has-icon success';
+        helper.className = 'field-helper success';
+        helper.textContent = 'Valid email address!';
+      } else {
+        input.closest('.field').className = 'field has-icon error';
+        helper.className = 'field-helper error';
+        helper.textContent = 'Enter a valid email address.';
+      }
+    }
+
+    function validatePassword(input, helperId, statusId) {
+      const helper = document.getElementById(helperId);
+      const v = input.value;
+      if (!v) {
+        input.closest('.field').className = 'field has-icon';
+        helper.className = 'field-helper hint';
+        helper.textContent = 'Min 8 chars, one number';
+        return;
+      }
+      const ok = v.length >= 8 && /\d/.test(v);
+      input.closest('.field').className = 'field has-icon ' + (ok ? 'success' : 'error');
+      helper.className = 'field-helper ' + (ok ? 'success' : 'error');
+      if (!ok) {
+        if (v.length < 8) helper.textContent = 'Too short -- minimum 8 characters.';
+        else              helper.textContent = 'Add at least one number.';
+      } else {
+        helper.textContent = 'Strong password!';
+      }
+    }
+
+    function togglePw(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const show  = input.type === 'password';
+      input.type  = show ? 'text' : 'password';
+      btn.textContent = show ? 'Hide' : 'Show';
+    }
+
+    function handleSelect(select) {
+      if (select.value) select.classList.add('has-value');
+      else              select.classList.remove('has-value');
+    }
+
+    function updateCounter(textarea, counterId, max) {
+      const len  = textarea.value.length;
+      const wrap = document.getElementById(counterId);
+      wrap.textContent = len + ' / ' + max;
+      wrap.className   = 'counter-wrap' + (len > max * 0.9 ? (len >= max ? ' over' : ' warn') : '');
+    }
+
+    function submitForm() {
+      showToast('Account created! Welcome aboard.');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.transform = 'translateX(-50%) translateY(0)';
+      setTimeout(() => { t.style.transform = 'translateX(-50%) translateY(80px)'; }, 2500);
+    }
+  </script>
+</body>
+</html>
