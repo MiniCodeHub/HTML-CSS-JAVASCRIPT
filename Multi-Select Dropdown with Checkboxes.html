@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Multi Select Dropdown</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: #0f172a;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .dropdown {
+      width: 320px;
+      position: relative;
+    }
+
+    .dropdown-btn {
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 14px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: 0.3s;
+    }
+
+    .dropdown-btn:hover {
+      border-color: #3b82f6;
+    }
+
+    .dropdown-content {
+      position: absolute;
+      top: 110%;
+      left: 0;
+      width: 100%;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      overflow: hidden;
+      display: none;
+      z-index: 10;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .dropdown-content.show {
+      display: block;
+    }
+
+    .option {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .option:hover {
+      background: #334155;
+    }
+
+    .selected-items {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #94a3b8;
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="dropdown">
+    <div class="dropdown-btn" id="dropdownBtn">
+      <span id="dropdownText">Select Skills</span>
+      <span>▼</span>
+    </div>
+
+    <div class="dropdown-content" id="dropdownContent">
+      <label class="option">
+        <input type="checkbox" value="HTML">
+        HTML
+      </label>
+
+      <label class="option">
+        <input type="checkbox" value="CSS">
+        CSS
+      </label>
+
+      <label class="option">
+        <input type="checkbox" value="JavaScript">
+        JavaScript
+      </label>
+
+      <label class="option">
+        <input type="checkbox" value="React">
+        React
+      </label>
+
+      <label class="option">
+        <input type="checkbox" value="Tailwind CSS">
+        Tailwind CSS
+      </label>
+    </div>
+
+    <div class="selected-items" id="selectedItems">
+      No items selected
+    </div>
+  </div>
+
+  <script>
+    const dropdownBtn = document.getElementById('dropdownBtn');
+    const dropdownContent = document.getElementById('dropdownContent');
+    const dropdownText = document.getElementById('dropdownText');
+    const selectedItems = document.getElementById('selectedItems');
+
+    const checkboxes = document.querySelectorAll(
+      '.dropdown-content input[type="checkbox"]'
+    );
+
+    dropdownBtn.addEventListener('click', () => {
+      dropdownContent.classList.toggle('show');
+    });
+
+    checkboxes.forEach((checkbox) => {
+      checkbox.addEventListener('change', updateSelected);
+    });
+
+    function updateSelected() {
+      const selected = [];
+
+      checkboxes.forEach((checkbox) => {
+        if (checkbox.checked) {
+          selected.push(checkbox.value);
+        }
+      });
+
+      if (selected.length > 0) {
+        dropdownText.textContent =
+          `${selected.length} Selected`;
+
+        selectedItems.textContent =
+          `Selected: ${selected.join(', ')}`;
+      } else {
+        dropdownText.textContent = 'Select Skills';
+        selectedItems.textContent = 'No items selected';
+      }
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!document.querySelector('.dropdown').contains(e.target)) {
+        dropdownContent.classList.remove('show');
+      }
+    });
+  </script>
+
+</body>
+</html>
