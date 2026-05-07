@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Dark Light Mode Toggle</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      transition: background 0.3s ease, color 0.3s ease;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f8fafc;
+      color: #0f172a;
+    }
+
+    body.dark {
+      background: #0f172a;
+      color: white;
+    }
+
+    .container {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 40px;
+      margin-bottom: 20px;
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 30px;
+    }
+
+    .toggle-btn {
+      border: none;
+      padding: 14px 24px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+      transition: transform 0.2s ease;
+    }
+
+    .toggle-btn:hover {
+      transform: scale(1.05);
+    }
+
+    body.dark .toggle-btn {
+      background: #38bdf8;
+      color: #0f172a;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Theme Toggle</h1>
+
+    <p>
+      Click the button to switch between dark and light mode.
+    </p>
+
+    <button class="toggle-btn" id="themeToggle">
+      Toggle Theme
+    </button>
+  </div>
+
+  <script>
+    const button = document.getElementById('themeToggle');
+
+    // Load saved theme
+    const savedTheme = localStorage.getItem('theme');
+
+    if (savedTheme === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    // Toggle theme
+    button.addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+
+      // Save theme
+      if (document.body.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    });
+  </script>
+
+</body>
+</html>
