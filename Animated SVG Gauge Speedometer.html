@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Animated SVG Gauge</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    .gauge-container {
+      width: 380px;
+      height: 380px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .bg-circle {
+      fill: none;
+      stroke: #1e293b;
+      stroke-width: 18;
+    }
+
+    .progress-circle {
+      fill: none;
+      stroke: #38bdf8;
+      stroke-width: 18;
+      stroke-linecap: round;
+      stroke-dasharray: 880;
+      stroke-dashoffset: 880;
+      transition: stroke-dashoffset 1s ease;
+      filter: drop-shadow(0 0 12px #38bdf8);
+    }
+
+    .needle {
+      position: absolute;
+      width: 6px;
+      height: 130px;
+      background: white;
+      bottom: 50%;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: translateX(-50%) rotate(-130deg);
+      border-radius: 10px;
+      transition: transform 1s ease;
+      box-shadow: 0 0 15px rgba(255,255,255,0.7);
+    }
+
+    .needle::after {
+      content: "";
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      width: 22px;
+      height: 22px;
+      background: #38bdf8;
+      border-radius: 50%;
+      transform: translateX(-50%);
+      box-shadow: 0 0 15px #38bdf8;
+    }
+
+    .value {
+      position: absolute;
+      text-align: center;
+    }
+
+    .value h1 {
+      margin: 0;
+      font-size: 64px;
+      font-weight: bold;
+    }
+
+    .value p {
+      margin-top: 8px;
+      color: #94a3b8;
+      font-size: 18px;
+      letter-spacing: 2px;
+    }
+
+    .controls {
+      position: absolute;
+      bottom: -80px;
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 10px;
+      background: #38bdf8;
+      color: #0f172a;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="gauge-container">
+
+    <!-- SVG Gauge -->
+    <svg viewBox="0 0 300 300">
+
+      <!-- Background Circle -->
+      <circle
+        class="bg-circle"
+        cx="150"
+        cy="150"
+        r="140"
+      />
+
+      <!-- Progress Circle -->
+      <circle
+        class="progress-circle"
+        id="progressCircle"
+        cx="150"
+        cy="150"
+        r="140"
+      />
+    </svg>
+
+    <!-- Needle -->
+    <div class="needle" id="needle"></div>
+
+    <!-- Value -->
+    <div class="value">
+      <h1 id="speedValue">0%</h1>
+      <p>SPEED</p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="controls">
+      <button onclick="setGauge(25)">25%</button>
+      <button onclick="setGauge(50)">50%</button>
+      <button onclick="setGauge(75)">75%</button>
+      <button onclick="setGauge(100)">100%</button>
+    </div>
+  </div>
+
+  <script>
+    const progressCircle =
+      document.getElementById('progressCircle');
+
+    const needle =
+      document.getElementById('needle');
+
+    const speedValue =
+      document.getElementById('speedValue');
+
+    const circumference = 880;
+
+    function setGauge(value) {
+
+      // SVG Progress
+      const offset =
+        circumference - (value / 100) * circumference;
+
+      progressCircle.style.strokeDashoffset = offset;
+
+      // Needle Rotation
+      const rotation =
+        -130 + (value / 100) * 260;
+
+      needle.style.transform =
+        `translateX(-50%) rotate(${rotation}deg)`;
+
+      // Counter Animation
+      let current = 0;
+
+      const interval = setInterval(() => {
+
+        if (current >= value) {
+          clearInterval(interval);
+        } else {
+          current++;
+          speedValue.textContent = current + '%';
+        }
+
+      }, 10);
+    }
+
+    // Initial animation
+    setGauge(75);
+  </script>
+
+</body>
+</html>
