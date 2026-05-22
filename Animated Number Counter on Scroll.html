@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Animated Number Counter</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background: #020617;
+      color: white;
+      overflow-x: hidden;
+    }
+
+    /* Spacer */
+    .hero {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .hero h1 {
+      font-size: 64px;
+      max-width: 800px;
+      line-height: 1.2;
+    }
+
+    .hero span {
+      background: linear-gradient(
+        90deg,
+        #38bdf8,
+        #8b5cf6
+      );
+
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Stats Section */
+    .stats-section {
+      min-height: 100vh;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      padding: 80px 20px;
+    }
+
+    .stats-grid {
+      width: 100%;
+      max-width: 1200px;
+
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(250px, 1fr));
+
+      gap: 30px;
+    }
+
+    /* Card */
+    .card {
+      position: relative;
+
+      background: rgba(255,255,255,0.04);
+
+      border: 1px solid rgba(255,255,255,0.08);
+
+      border-radius: 24px;
+
+      padding: 40px 30px;
+
+      text-align: center;
+
+      overflow: hidden;
+
+      backdrop-filter: blur(12px);
+
+      transition:
+        transform 0.4s ease,
+        border-color 0.4s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-10px);
+
+      border-color:
+        rgba(56,189,248,0.4);
+    }
+
+    /* Glow Effect */
+    .card::before {
+      content: "";
+
+      position: absolute;
+      inset: 0;
+
+      background: radial-gradient(
+        circle at top left,
+        rgba(56,189,248,0.18),
+        transparent 60%
+      );
+
+      pointer-events: none;
+    }
+
+    /* Number */
+    .counter {
+      font-size: 64px;
+      font-weight: bold;
+
+      margin-bottom: 14px;
+
+      background: linear-gradient(
+        90deg,
+        #38bdf8,
+        #8b5cf6
+      );
+
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Label */
+    .label {
+      font-size: 18px;
+      color: #cbd5e1;
+      letter-spacing: 1px;
+    }
+
+    /* Extra Content */
+    .footer-space {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #64748b;
+      font-size: 22px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>
+      Scroll Down to Trigger
+      <span>Animated Counters</span>
+    </h1>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats-section">
+
+    <div class="stats-grid">
+
+      <div class="card">
+        <div
+          class="counter"
+          data-target="1500"
+        >
+          0
+        </div>
+
+        <div class="label">
+          Projects Completed
+        </div>
+      </div>
+
+      <div class="card">
+        <div
+          class="counter"
+          data-target="980"
+        >
+          0
+        </div>
+
+        <div class="label">
+          Happy Clients
+        </div>
+      </div>
+
+      <div class="card">
+        <div
+          class="counter"
+          data-target="320"
+        >
+          0
+        </div>
+
+        <div class="label">
+          Team Members
+        </div>
+      </div>
+
+      <div class="card">
+        <div
+          class="counter"
+          data-target="99"
+        >
+          0
+        </div>
+
+        <div class="label">
+          Success Rate
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- Footer -->
+  <section class="footer-space">
+    Smooth Scroll Animation Effect
+  </section>
+
+  <script>
+    const counters =
+      document.querySelectorAll('.counter');
+
+    let started = false;
+
+    // Animate Counter
+    function animateCounter(counter) {
+
+      const target =
+        +counter.getAttribute('data-target');
+
+      let current = 0;
+
+      const increment =
+        target / 120;
+
+      function updateCounter() {
+
+        current += increment;
+
+        if (current < target) {
+
+          counter.innerText =
+            Math.floor(current);
+
+          requestAnimationFrame(
+            updateCounter
+          );
+        }
+        else {
+
+          counter.innerText = target;
+        }
+      }
+
+      updateCounter();
+    }
+
+    // Observer
+    const observer =
+      new IntersectionObserver((entries) => {
+
+        entries.forEach((entry) => {
+
+          if (
+            entry.isIntersecting &&
+            !started
+          ) {
+
+            started = true;
+
+            counters.forEach((counter) => {
+
+              animateCounter(counter);
+            });
+          }
+        });
+
+      }, {
+        threshold: 0.4
+      });
+
+    observer.observe(
+      document.querySelector(
+        '.stats-section'
+      )
+    );
+  </script>
+
+</body>
+</html>
