@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Tooltip Component</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #020617;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      overflow: hidden;
+      color: white;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 80px;
+    }
+
+    .tooltip-wrapper {
+      position: relative;
+      display: inline-block;
+    }
+
+    .btn {
+      padding: 16px 30px;
+
+      border: none;
+      border-radius: 16px;
+
+      background: linear-gradient(
+        135deg,
+        #38bdf8,
+        #8b5cf6
+      );
+
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+
+      cursor: pointer;
+
+      transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-4px);
+
+      box-shadow:
+        0 10px 25px rgba(56,189,248,0.35);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: absolute;
+
+      min-width: 180px;
+
+      padding: 14px 18px;
+
+      border-radius: 14px;
+
+      background: rgba(15,23,42,0.95);
+
+      border: 1px solid rgba(255,255,255,0.08);
+
+      backdrop-filter: blur(14px);
+
+      color: white;
+      font-size: 14px;
+      line-height: 1.5;
+
+      opacity: 0;
+      pointer-events: none;
+
+      transition:
+        opacity 0.3s ease,
+        transform 0.3s ease;
+
+      z-index: 10;
+    }
+
+    /* Show Tooltip */
+    .tooltip-wrapper:hover .tooltip {
+      opacity: 1;
+    }
+
+    /* Top */
+    .top {
+      bottom: calc(100% + 14px);
+      left: 50%;
+      transform:
+        translateX(-50%)
+        translateY(10px);
+    }
+
+    .tooltip-wrapper:hover .top {
+      transform:
+        translateX(-50%)
+        translateY(0);
+    }
+
+    /* Bottom */
+    .bottom {
+      top: calc(100% + 14px);
+      left: 50%;
+      transform:
+        translateX(-50%)
+        translateY(-10px);
+    }
+
+    .tooltip-wrapper:hover .bottom {
+      transform:
+        translateX(-50%)
+        translateY(0);
+    }
+
+    /* Left */
+    .left {
+      right: calc(100% + 14px);
+      top: 50%;
+
+      transform:
+        translateY(-50%)
+        translateX(10px);
+    }
+
+    .tooltip-wrapper:hover .left {
+      transform:
+        translateY(-50%)
+        translateX(0);
+    }
+
+    /* Right */
+    .right {
+      left: calc(100% + 14px);
+      top: 50%;
+
+      transform:
+        translateY(-50%)
+        translateX(-10px);
+    }
+
+    .tooltip-wrapper:hover .right {
+      transform:
+        translateY(-50%)
+        translateX(0);
+    }
+
+    /* Arrow */
+    .tooltip::before {
+      content: "";
+
+      position: absolute;
+
+      width: 12px;
+      height: 12px;
+
+      background: rgba(15,23,42,0.95);
+
+      transform: rotate(45deg);
+    }
+
+    /* Arrow Positions */
+    .top::before {
+      left: 50%;
+      bottom: -6px;
+      transform:
+        translateX(-50%)
+        rotate(45deg);
+    }
+
+    .bottom::before {
+      left: 50%;
+      top: -6px;
+      transform:
+        translateX(-50%)
+        rotate(45deg);
+    }
+
+    .left::before {
+      top: 50%;
+      right: -6px;
+
+      transform:
+        translateY(-50%)
+        rotate(45deg);
+    }
+
+    .right::before {
+      top: 50%;
+      left: -6px;
+
+      transform:
+        translateY(-50%)
+        rotate(45deg);
+    }
+
+    /* Heading */
+    .heading {
+      position: absolute;
+      top: 60px;
+      text-align: center;
+      width: 100%;
+    }
+
+    .heading h1 {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .heading p {
+      color: #94a3b8;
+      font-size: 18px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+
+      .container {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .heading h1 {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Heading -->
+  <div class="heading">
+    <h1>Tooltip Component</h1>
+
+    <p>
+      Hover buttons to see tooltip positions
+    </p>
+  </div>
+
+  <!-- Tooltips -->
+  <div class="container">
+
+    <!-- Top -->
+    <div class="tooltip-wrapper">
+
+      <button class="btn">
+        Top Tooltip
+      </button>
+
+      <div class="tooltip top">
+        Tooltip appears above the button.
+      </div>
+    </div>
+
+    <!-- Bottom -->
+    <div class="tooltip-wrapper">
+
+      <button class="btn">
+        Bottom Tooltip
+      </button>
+
+      <div class="tooltip bottom">
+        Tooltip appears below the button.
+      </div>
+    </div>
+
+    <!-- Left -->
+    <div class="tooltip-wrapper">
+
+      <button class="btn">
+        Left Tooltip
+      </button>
+
+      <div class="tooltip left">
+        Tooltip appears on the left side.
+      </div>
+    </div>
+
+    <!-- Right -->
+    <div class="tooltip-wrapper">
+
+      <button class="btn">
+        Right Tooltip
+      </button>
+
+      <div class="tooltip right">
+        Tooltip appears on the right side.
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Optional:
+    // Auto-position detection logic
+    // can be added dynamically here.
+
+    console.log(
+      'Tooltip Component Loaded'
+    );
+  </script>
+
+</body>
+</html>
