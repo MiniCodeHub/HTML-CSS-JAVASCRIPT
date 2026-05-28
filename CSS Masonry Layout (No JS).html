@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>CSS Masonry Layout</title>
+
+  <style>
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+
+      min-height: 100vh;
+
+      background:
+        linear-gradient(
+          135deg,
+          #020617,
+          #0f172a
+        );
+
+      color: white;
+
+      padding: 60px 20px;
+    }
+
+    /* Heading */
+    .heading {
+
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .heading h1 {
+
+      font-size: 56px;
+      margin-bottom: 16px;
+
+      background:
+        linear-gradient(
+          90deg,
+          #38bdf8,
+          #8b5cf6
+        );
+
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .heading p {
+
+      color: #94a3b8;
+      font-size: 18px;
+    }
+
+    /* Masonry Layout */
+    .masonry {
+
+      column-count: 4;
+      column-gap: 20px;
+
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    /* Card */
+    .card {
+
+      position: relative;
+
+      break-inside: avoid;
+
+      margin-bottom: 20px;
+
+      border-radius: 24px;
+
+      overflow: hidden;
+
+      cursor: pointer;
+
+      background: #111827;
+
+      transition:
+        transform 0.4s ease,
+        box-shadow 0.4s ease;
+    }
+
+    .card:hover {
+
+      transform: translateY(-8px);
+
+      box-shadow:
+        0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    /* Images */
+    .card img {
+
+      width: 100%;
+      display: block;
+
+      transition:
+        transform 0.5s ease;
+    }
+
+    .card:hover img {
+
+      transform: scale(1.05);
+    }
+
+    /* Overlay */
+    .overlay {
+
+      position: absolute;
+      inset: 0;
+
+      background:
+        linear-gradient(
+          to top,
+          rgba(0,0,0,0.75),
+          transparent
+        );
+
+      display: flex;
+      align-items: flex-end;
+
+      padding: 24px;
+
+      opacity: 0;
+
+      transition:
+        opacity 0.4s ease;
+    }
+
+    .card:hover .overlay {
+
+      opacity: 1;
+    }
+
+    .overlay h3 {
+
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    /* Responsive */
+    @media (max-width: 1200px) {
+
+      .masonry {
+        column-count: 3;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      .masonry {
+        column-count: 2;
+      }
+
+      .heading h1 {
+        font-size: 40px;
+      }
+    }
+
+    @media (max-width: 500px) {
+
+      .masonry {
+        column-count: 1;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+  <!-- Heading -->
+  <div class="heading">
+
+    <h1>CSS Masonry Layout</h1>
+
+    <p>
+      Responsive Pinterest-style layout using pure CSS
+    </p>
+
+  </div>
+
+  <!-- Masonry Gallery -->
+  <div class="masonry">
+
+    <!-- Card 1 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1506744038136-46273834b3fb"
+        alt="Nature"
+      />
+
+      <div class="overlay">
+        <h3>Mountain View</h3>
+      </div>
+
+    </div>
+
+    <!-- Card 2 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e"
+        alt="Forest"
+      />
+
+      <div class="overlay">
+        <h3>Forest Path</h3>
+      </div>
+
+    </div>
+
+    <!-- Card 3 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1519608487953-e999c86e7455"
+        alt="City"
+      />
+
+      <div class="overlay">
+        <h3>City Lights</h3>
+      </div>
+
+    </div>
+
+    <!-- Card 4 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+        alt="Beach"
+      />
+
+      <div class="overlay">
+        <h3>Ocean Breeze</h3>
+      </div>
+
+    </div>
+
+    <!-- Card 5 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1526772662000-3f88f10405ff"
+        alt="Desert"
+      />
+
+      <div class="overlay">
+        <h3>Golden Desert</h3>
+      </div>
+
+    </div>
+
+    <!-- Card 6 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1470770841072-f978cf4d019e"
+        alt="Lake"
+      />
+
+      <div class="overlay">
+        <h3>Calm Lake</h3>
+      </div>
+
+    </div>
+
+    <!-- Card 7 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1501785888041-af3ef285b470"
+        alt="Snow"
+      />
+
+      <div class="overlay">
+        <h3>Snow Peaks</h3>
+      </div>
+
+    </div>
+
+    <!-- Card 8 -->
+    <div class="card">
+
+      <img
+        src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e"
+        alt="Beach"
+      />
+
+      <div class="overlay">
+        <h3>Tropical Beach</h3>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>
