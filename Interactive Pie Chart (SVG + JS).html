@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Interactive Pie Chart</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:#0f172a;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+
+.container{
+    width:900px;
+    max-width:95%;
+    background:#1e293b;
+    padding:40px;
+    border-radius:24px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:40px;
+    align-items:center;
+    justify-content:center;
+}
+
+.chart-wrapper{
+    position:relative;
+}
+
+svg{
+    width:320px;
+    height:320px;
+    transform:rotate(-90deg);
+}
+
+.slice{
+    fill:none;
+    stroke-width:40;
+    cursor:pointer;
+    transition:
+        transform .3s,
+        opacity .3s;
+    transform-origin:center;
+}
+
+.slice:hover{
+    transform:scale(1.04);
+    opacity:.9;
+}
+
+.center-text{
+    position:absolute;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    pointer-events:none;
+}
+
+.center-text h2{
+    font-size:2rem;
+}
+
+.center-text p{
+    color:#94a3b8;
+}
+
+.legend{
+    flex:1;
+    min-width:250px;
+}
+
+.legend-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-bottom:18px;
+    padding:12px;
+    border-radius:12px;
+    background:#0f172a;
+}
+
+.color-box{
+    width:18px;
+    height:18px;
+    border-radius:4px;
+}
+
+.tooltip{
+    margin-top:20px;
+    padding:16px;
+    background:#0f172a;
+    border-radius:12px;
+    min-height:70px;
+}
+
+.tooltip h3{
+    margin-bottom:6px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="chart-wrapper">
+
+        <svg viewBox="0 0 240 240" id="pieChart">
+
+            <circle
+                cx="120"
+                cy="120"
+                r="80"
+                fill="none"
+                stroke="#334155"
+                stroke-width="40"
+            />
+        </svg>
+
+        <div class="center-text">
+            <h2>100%</h2>
+            <p>Total Usage</p>
+        </div>
+
+    </div>
+
+    <div class="legend">
+
+        <h2 style="margin-bottom:20px;">
+            Traffic Sources
+        </h2>
+
+        <div id="legend"></div>
+
+        <div class="tooltip" id="tooltip">
+            <h3>Hover a segment</h3>
+            <p>View details here</p>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const data = [
+    {
+        label:"Direct",
+        value:35,
+        color:"#06b6d4"
+    },
+    {
+        label:"Search",
+        value:25,
+        color:"#8b5cf6"
+    },
+    {
+        label:"Social",
+        value:20,
+        color:"#22c55e"
+    },
+    {
+        label:"Referral",
+        value:20,
+        color:"#f97316"
+    }
+];
+
+const svg =
+document.getElementById("pieChart");
+
+const legend =
+document.getElementById("legend");
+
+const tooltip =
+document.getElementById("tooltip");
+
+const radius = 80;
+const circumference =
+2 * Math.PI * radius;
+
+let offset = 0;
+
+data.forEach(item => {
+
+    const percent =
+        item.value / 100;
+
+    const dash =
+        percent * circumference;
+
+    const circle =
+        document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+        );
+
+    circle.setAttribute(
+        "cx",
+        "120"
+    );
+
+    circle.setAttribute(
+        "cy",
+        "120"
+    );
+
+    circle.setAttribute(
+        "r",
+        radius
+    );
+
+    circle.setAttribute(
+        "stroke",
+        item.color
+    );
+
+    circle.setAttribute(
+        "stroke-dasharray",
+        `${dash} ${circumference}`
+    );
+
+    circle.setAttribute(
+        "stroke-dashoffset",
+        -offset
+    );
+
+    circle.setAttribute(
+        "class",
+        "slice"
+    );
+
+    offset += dash;
+
+    circle.addEventListener(
+        "mouseenter",
+        () => {
+
+            tooltip.innerHTML = `
+                <h3>${item.label}</h3>
+                <p>
+                    ${item.value}% of total traffic
+                </p>
+            `;
+        }
+    );
+
+    svg.appendChild(circle);
+
+    const legendItem =
+        document.createElement("div");
+
+    legendItem.className =
+        "legend-item";
+
+    legendItem.innerHTML = `
+        <div
+            class="color-box"
+            style="
+                background:${item.color}
+            "
+        ></div>
+
+        <strong>
+            ${item.label}
+        </strong>
+
+        <span>
+            ${item.value}%
+        </span>
+    `;
+
+    legend.appendChild(
+        legendItem
+    );
+});
+
+</script>
+
+</body>
+</html>
