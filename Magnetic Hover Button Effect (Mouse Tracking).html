@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Magnetic Hover Button</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:
+    radial-gradient(
+        circle at center,
+        #1e293b,
+        #020617
+    );
+    overflow:hidden;
+}
+
+.container{
+    text-align:center;
+}
+
+h1{
+    color:white;
+    margin-bottom:20px;
+    font-size:3rem;
+}
+
+p{
+    color:#94a3b8;
+    margin-bottom:50px;
+}
+
+.magnetic-btn{
+    position:relative;
+    width:220px;
+    height:70px;
+    border:none;
+    cursor:pointer;
+    border-radius:999px;
+
+    background:
+    linear-gradient(
+        135deg,
+        #06b6d4,
+        #8b5cf6
+    );
+
+    color:white;
+    font-size:1.1rem;
+    font-weight:bold;
+
+    transition:
+        transform .25s ease,
+        box-shadow .25s ease;
+
+    box-shadow:
+        0 10px 30px
+        rgba(139,92,246,.35);
+}
+
+.magnetic-btn:hover{
+    box-shadow:
+        0 15px 45px
+        rgba(139,92,246,.6);
+}
+
+.glow{
+    position:absolute;
+    width:350px;
+    height:350px;
+
+    background:
+    radial-gradient(
+        circle,
+        rgba(6,182,212,.18),
+        transparent 70%
+    );
+
+    border-radius:50%;
+    filter:blur(40px);
+
+    z-index:-1;
+}
+
+</style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<div class="container">
+
+    <h1>Magnetic Button</h1>
+
+    <p>
+        Move your mouse around the button
+        and watch it follow your cursor.
+    </p>
+
+    <button class="magnetic-btn">
+        Hover Me
+    </button>
+
+</div>
+
+<script>
+
+const button =
+document.querySelector(
+    ".magnetic-btn"
+);
+
+const glow =
+document.querySelector(
+    ".glow"
+);
+
+button.addEventListener(
+    "mousemove",
+    (e)=>{
+
+        const rect =
+        button.getBoundingClientRect();
+
+        const x =
+        e.clientX -
+        rect.left -
+        rect.width / 2;
+
+        const y =
+        e.clientY -
+        rect.top -
+        rect.height / 2;
+
+        button.style.transform =
+        `translate(
+            ${x * 0.25}px,
+            ${y * 0.25}px
+        )`;
+
+    }
+);
+
+button.addEventListener(
+    "mouseleave",
+    ()=>{
+
+        button.style.transform =
+        "translate(0px,0px)";
+    }
+);
+
+document.addEventListener(
+    "mousemove",
+    (e)=>{
+
+        glow.style.left =
+        e.clientX - 175 + "px";
+
+        glow.style.top =
+        e.clientY - 175 + "px";
+    }
+);
+
+</script>
+
+</body>
+</html>
