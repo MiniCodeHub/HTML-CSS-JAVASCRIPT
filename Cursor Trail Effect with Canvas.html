@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Cursor Trail Effect</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    overflow:hidden;
+    background:#020617;
+    font-family:Arial,sans-serif;
+}
+
+canvas{
+    display:block;
+}
+
+.overlay{
+    position:absolute;
+    inset:0;
+
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    color:white;
+    pointer-events:none;
+    text-align:center;
+}
+
+.overlay h1{
+    font-size:4rem;
+    margin-bottom:20px;
+}
+
+.overlay p{
+    color:#94a3b8;
+    font-size:1.1rem;
+}
+
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+
+<div class="overlay">
+    <h1>Cursor Trail</h1>
+    <p>Move your mouse around the screen</p>
+</div>
+
+<script>
+
+const canvas =
+document.getElementById("canvas");
+
+const ctx =
+canvas.getContext("2d");
+
+function resizeCanvas(){
+
+    canvas.width =
+    window.innerWidth;
+
+    canvas.height =
+    window.innerHeight;
+}
+
+resizeCanvas();
+
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
+
+const particles = [];
+
+class Particle{
+
+    constructor(x,y){
+
+        this.x = x;
+        this.y = y;
+
+        this.size =
+            Math.random() * 6 + 2;
+
+        this.speedX =
+            (Math.random() - 0.5) * 2;
+
+        this.speedY =
+            (Math.random() - 0.5) * 2;
+
+        this.opacity = 1;
+
+        this.color =
+        `hsl(
+            ${Math.random()*80 + 180},
+            100%,
+            60%
+        )`;
+    }
+
+    update(){
+
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        this.opacity -= 0.02;
+        this.size *= 0.98;
+    }
+
+    draw(){
+
+        ctx.save();
+
+        ctx.globalAlpha =
+            this.opacity;
+
+        ctx.beginPath();
+
+        ctx.arc(
+            this.x,
+            this.y,
+            this.size,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fillStyle =
+            this.color;
+
+        ctx.shadowBlur = 20;
+        ctx.shadowColor =
+            this.color;
+
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
+window.addEventListener(
+    "mousemove",
+    (e)=>{
+
+        for(let i=0;i<4;i++){
+
+            particles.push(
+                new Particle(
+                    e.clientX,
+                    e.clientY
+                )
+            );
+        }
+    }
+);
+
+function animate(){
+
+    ctx.fillStyle =
+    "rgba(2,6,23,0.15)";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    for(
+        let i = particles.length - 1;
+        i >= 0;
+        i--
+    ){
+
+        particles[i].update();
+        particles[i].draw();
+
+        if(
+            particles[i].opacity <= 0 ||
+            particles[i].size <= 0.5
+        ){
+
+            particles.splice(i,1);
+        }
+    }
+
+    requestAnimationFrame(
+        animate
+    );
+}
+
+animate();
+
+</script>
+
+</body>
+</html>
