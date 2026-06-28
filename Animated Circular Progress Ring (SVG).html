@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Animated Progress Ring</title>
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#020617;
+}
+
+.container{
+text-align:center;
+background:#0f172a;
+padding:40px;
+border-radius:24px;
+box-shadow:0 15px 40px rgba(0,0,0,.35);
+}
+
+svg{
+width:260px;
+height:260px;
+transform:rotate(-90deg);
+}
+
+.progress{
+transition:
+stroke-dashoffset .7s ease;
+}
+
+.value{
+position:absolute;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+font-size:2.7rem;
+font-weight:bold;
+color:white;
+}
+
+.wrapper{
+position:relative;
+width:260px;
+height:260px;
+margin:auto;
+}
+
+.buttons{
+margin-top:35px;
+display:flex;
+justify-content:center;
+gap:15px;
+}
+
+button{
+padding:12px 26px;
+border:none;
+border-radius:12px;
+cursor:pointer;
+font-size:16px;
+font-weight:bold;
+background:#06b6d4;
+color:white;
+transition:.3s;
+}
+
+button:hover{
+transform:translateY(-3px);
+background:#0891b2;
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1
+style="
+color:white;
+margin-bottom:30px;
+">
+Progress Ring
+</h1>
+
+<div class="wrapper">
+
+<svg>
+
+<circle
+cx="130"
+cy="130"
+r="100"
+stroke="#1e293b"
+stroke-width="16"
+fill="none"
+/>
+
+<circle
+class="progress"
+id="progressCircle"
+cx="130"
+cy="130"
+r="100"
+stroke="#06b6d4"
+stroke-width="16"
+stroke-linecap="round"
+fill="none"
+/>
+
+</svg>
+
+<div
+class="value"
+id="percentage">
+75%
+</div>
+
+</div>
+
+<div class="buttons">
+
+<button id="decrease">
+-10%
+</button>
+
+<button id="increase">
++10%
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const radius = 100;
+
+const circumference =
+2 * Math.PI * radius;
+
+const progressCircle =
+document.getElementById(
+"progressCircle"
+);
+
+const percentage =
+document.getElementById(
+"percentage"
+);
+
+progressCircle.style.strokeDasharray =
+circumference;
+
+let progress = 75;
+
+function updateProgress(){
+
+const offset =
+circumference -
+(progress/100)
+*
+circumference;
+
+progressCircle.style.strokeDashoffset =
+offset;
+
+percentage.textContent =
+progress + "%";
+
+}
+
+updateProgress();
+
+document
+.getElementById("increase")
+.addEventListener(
+"click",
+()=>{
+
+progress =
+Math.min(
+100,
+progress+10
+);
+
+updateProgress();
+
+}
+);
+
+document
+.getElementById("decrease")
+.addEventListener(
+"click",
+()=>{
+
+progress =
+Math.max(
+0,
+progress-10
+);
+
+updateProgress();
+
+}
+);
+
+</script>
+
+</body>
+</html>
