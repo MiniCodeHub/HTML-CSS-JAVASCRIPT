@@ -1,0 +1,94 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    padding:40px;
+}
+
+.container{
+    max-width:1000px;
+    margin:auto;
+}
+
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+button{
+    border:none;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.add-btn{
+    background:#38bdf8;
+    color:white;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#1e293b;
+    border-radius:16px;
+    overflow:hidden;
+}
+
+th,td{
+    padding:16px;
+    text-align:left;
+}
+
+th{
+    background:#334155;
+}
+
+tr:nth-child(even){
+    background:#273549;
+}
+
+.income{
+    color:#22c55e;
+}
+
+.expense{
+    color:#ef4444;
+}
+
+.badge{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:bold;
+}
+
+.salary{
+    background:#16a34a;
+}
+
+.food{
+    background:#f59e0b;
+}
+
+.rent{
+    background:#ef4444;
+}
+
+.edit{
+    background:#3b82f6;
+    color:white;
+}
+
+.delete{
+    background:#ef4444;
+    color:white;
+}
