@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="container">
+
+    <img src="logo.png" alt="logo">
+
+    <div class="selectformtype">
+        <input type="button" value="Attendance" id="attendanceBtn" class="active">
+        <input type="button" value="Register" id="registerBtn">
+    </div>
+
+    <!-- Attendance Form -->
+    <form class="attendance activeForm">
+        <h2>Attendance</h2>
+
+        <label>Student ID</label>
+        <input type="number" placeholder="Student ID" required>
+
+        <label>Year</label>
+        <div class="year">
+            <label><input type="radio" name="year1"> FYBCA</label>
+            <label><input type="radio" name="year1"> SYBCA</label>
+            <label><input type="radio" name="year1"> TYBCA</label>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- Registration Form -->
+    <form class="register-form">
+        <h2>Registration Form</h2>
+
+        <label>Full Name</label>
+        <input type="text" placeholder="Enter your full name" required>
+
+        <label>Registration Number</label>
+        <input type="number" placeholder="Enter Registration Number" required>
+
+        <label>Phone Number</label>
+        <input type="tel" placeholder="Enter phone number" required>
+
+        <label>Year</label>
+        <div class="year">
+            <label><input type="radio" name="year2"> FYBCA</label>
+            <label><input type="radio" name="year2"> SYBCA</label>
+            <label><input type="radio" name="year2"> TYBCA</label>
+        </div>
+
+        <button type="submit">Register</button>
+    </form>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
