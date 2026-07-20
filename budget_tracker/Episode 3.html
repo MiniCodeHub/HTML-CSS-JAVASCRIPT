@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Budget Tracker - Episode 3</title>
+
+<link rel="stylesheet" href="ep3.css">
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Budget Dashboard</h1>
+
+    <div id="cards" class="cards"></div>
+
+</div>
+
+<script src="ep3.js"></script>
+
+</body>
+</html>
+<style>
+    *{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+
+.container{
+    width:1200px;
+    padding:40px;
+}
+
+h1{
+    margin-bottom:30px;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:
+    repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:#1e293b;
+    padding:30px;
+    border-radius:20px;
+    transition:0.3s;
+    cursor:pointer;
+    border:1px solid #334155;
+}
+
+.card:hover{
+    transform:translateY(-8px);
+}
+
+.card h2{
+    margin-top:10px;
+    margin-bottom:15px;
+}
+
+.label{
+    color:#94a3b8;
+}
+
+.trend{
+    font-weight:bold;
+}
+
+.up{
+    color:#22c55e;
+}
+
+.down{
+    color:#ef4444;
+}
+</style>
+<script>
+    const financeData = [
+    {
+        title:"Balance",
+        value:12480,
+        trend:"+12.5%",
+        positive:true
+    },
+    {
+        title:"Income",
+        value:18900,
+        trend:"+8.2%",
+        positive:true
+    },
+    {
+        title:"Expenses",
+        value:6420,
+        trend:"-4.1%",
+        positive:false
+    },
+    {
+        title:"Savings",
+        value:6480,
+        trend:"+15.7%",
+        positive:true
+    }
+];
+
+const cards =
+document.getElementById("cards");
+
+financeData.forEach(item=>{
+
+    cards.innerHTML += `
+        <div class="card">
+            <p class="label">
+                ${item.title}
+            </p>
+
+            <h2>
+                $${item.value.toLocaleString()}
+            </h2>
+
+            <p class="
+                trend
+                ${item.positive
+                    ? "up"
+                    : "down"
+                }
+            ">
+                ${item.trend}
+                this month
+            </p>
+        </div>
+    `;
+});
+</script>

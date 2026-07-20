@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>Budget Tracker</title>
+
+<link
+rel="stylesheet"
+href="ep2.css">
+
+</head>
+
+<body>
+
+<div class="dashboard">
+
+<aside class="sidebar">
+
+<h2>Budget</h2>
+
+<nav>
+
+<a class="active" href="#">
+🏠 Dashboard
+</a>
+
+<a href="#">
+💳 Transactions
+</a>
+
+<a href="#">
+📊 Analytics
+</a>
+
+<a href="#">
+💰 Budget
+</a>
+
+<a href="#">
+⚙ Settings
+</a>
+
+</nav>
+
+</aside>
+
+<main class="content">
+
+<header>
+
+<div>
+
+<h1>Welcome Back 👋</h1>
+
+<p>
+Track your finances with ease.
+</p>
+
+</div>
+
+<div class="header-right">
+
+<input
+type="text"
+placeholder="Search...">
+
+<button class="notify">
+🔔
+</button>
+
+<div class="profile">
+
+<div class="avatar">
+MK
+</div>
+
+<div>
+
+<h4>MiniCodeHub</h4>
+
+<small>
+Premium User
+</small>
+
+</div>
+
+</div>
+
+</div>
+
+</header>
+
+<section class="cards">
+
+<div class="card">
+
+<h3>Balance</h3>
+
+<h2>$12,480</h2>
+
+</div>
+
+<div class="card">
+
+<h3>Income</h3>
+
+<h2>$18,900</h2>
+
+</div>
+
+<div class="card">
+
+<h3>Expenses</h3>
+
+<h2>$6,420</h2>
+
+</div>
+
+</section>
+
+</main>
+
+</div>
+
+<script src="ep2.js"></script>
+
+</body>
+</html>
+<style>
+    *{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#0f172a;
+color:white;
+}
+
+.dashboard{
+display:grid;
+grid-template-columns:250px 1fr;
+min-height:100vh;
+}
+
+.sidebar{
+background:#1e293b;
+padding:30px;
+}
+
+.sidebar h2{
+margin-bottom:40px;
+color:#38bdf8;
+}
+
+.sidebar nav{
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+
+.sidebar a{
+text-decoration:none;
+color:#cbd5e1;
+padding:14px;
+border-radius:12px;
+transition:.3s;
+}
+
+.sidebar a:hover,
+.sidebar .active{
+background:#38bdf8;
+color:white;
+}
+
+.content{
+padding:40px;
+}
+
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:40px;
+gap:20px;
+}
+
+header p{
+color:#94a3b8;
+margin-top:6px;
+}
+
+.header-right{
+display:flex;
+align-items:center;
+gap:18px;
+}
+
+input{
+padding:12px 18px;
+width:250px;
+background:#1e293b;
+border:none;
+border-radius:12px;
+color:white;
+}
+
+.notify{
+width:48px;
+height:48px;
+border:none;
+background:#1e293b;
+color:white;
+border-radius:12px;
+cursor:pointer;
+font-size:20px;
+}
+
+.profile{
+display:flex;
+align-items:center;
+gap:12px;
+}
+
+.avatar{
+width:50px;
+height:50px;
+background:#38bdf8;
+border-radius:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+font-weight:bold;
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:20px;
+}
+
+.card{
+background:#1e293b;
+padding:25px;
+border-radius:18px;
+}
+
+.card h3{
+color:#94a3b8;
+margin-bottom:10px;
+}
+
+@media(max-width:900px){
+
+.dashboard{
+grid-template-columns:1fr;
+}
+
+.sidebar{
+display:none;
+}
+
+header{
+flex-direction:column;
+align-items:flex-start;
+}
+
+.header-right{
+width:100%;
+flex-direction:column;
+align-items:stretch;
+}
+
+input{
+width:100%;
+}
+
+.cards{
+grid-template-columns:1fr;
+}
+
+}
+</style>
+<script>
+    console.log("Budget Tracker Episode 2");
+</script>
