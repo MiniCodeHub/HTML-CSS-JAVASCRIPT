@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Budget Tracker Episode 6</title>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Budget Tracker</h1>
+
+<button id="addBtn">
++ Add Transaction
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Title</th>
+<th>Type</th>
+<th>Amount</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="tableBody">
+
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>
+
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:#fff;
+    padding:40px;
+}
+
+.container{
+    max-width:900px;
+    margin:auto;
+}
+
+h1{
+    margin-bottom:25px;
+}
+
+button{
+    border:none;
+    cursor:pointer;
+}
+
+#addBtn{
+    background:#3b82f6;
+    color:white;
+    padding:12px 20px;
+    border-radius:8px;
+    margin-bottom:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#1e293b;
+}
+
+th,td{
+    padding:14px;
+    text-align:left;
+}
+
+th{
+    background:#334155;
+}
+
+tr:nth-child(even){
+    background:#273549;
+}
+
+.income{
+    color:#22c55e;
+}
+
+.expense{
+    color:#ef4444;
+}
+
+.deleteBtn{
+    background:#ef4444;
+    color:white;
+    padding:8px 12px;
+    border-radius:6px;
+}
+</style>
+
+<script>
+
+let transactions =
+JSON.parse(
+localStorage.getItem("transactions")
+) || [];
+
+function saveData(){
+
+localStorage.setItem(
+"transactions",
+JSON.stringify(transactions)
+);
+
+}
+
+function render(){
+
+const body =
+document.getElementById("tableBody");
+
+body.innerHTML="";
+
+transactions.forEach((item,index)=>{
+
+body.innerHTML+=`
+
+<tr>
+
+<td>${item.title}</td>
+
+<td class="${item.type}">
+${item.type}
+</td>
+
+<td class="${item.type}">
+${item.type==="income" ? "+" : "-"}$${item.amount}
+</td>
+
+<td>
+
+<button
+class="deleteBtn"
+onclick="deleteTransaction(${index})">
+
+Delete
+
+</button>
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+}
+
+function addTransaction(){
+
+const title=
+prompt("Transaction Title");
+
+if(!title) return;
+
+const type=
+prompt("income / expense");
+
+const amount=
+Number(prompt("Amount"));
+
+transactions.push({
+
+title,
+type,
+amount
+
+});
+
+saveData();
+
+render();
+
+}
+
+function deleteTransaction(index){
+
+transactions.splice(index,1);
+
+saveData();
+
+render();
+
+}
+
+document
+.getElementById("addBtn")
+.onclick=addTransaction;
+
+render();
+
+</script>
