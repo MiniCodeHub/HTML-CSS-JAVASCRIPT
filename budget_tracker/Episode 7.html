@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Budget Tracker - Episode 7</title>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Budget Tracker Dashboard</h1>
+
+<div class="cards">
+
+<div class="card">
+<h2>Total Balance</h2>
+<p class="balance" id="balance">$0</p>
+</div>
+
+<div class="card">
+<h2>Total Income</h2>
+<p class="income" id="income">$0</p>
+</div>
+
+<div class="card">
+<h2>Total Expenses</h2>
+<p class="expense" id="expense">$0</p>
+</div>
+
+</div>
+
+<button onclick="addTransaction()">
++ Add Transaction
+</button>
+
+<table>
+
+<thead>
+<tr>
+<th>Title</th>
+<th>Type</th>
+<th>Amount</th>
+</tr>
+</thead>
+
+<tbody id="transactions"></tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>
+
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial,sans-serif;
+}
+
+body{
+    background:#0f172a;
+    color:white;
+    padding:40px;
+}
+
+.container{
+    max-width:1100px;
+    margin:auto;
+}
+
+h1{
+    margin-bottom:30px;
+}
+
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:20px;
+    margin-bottom:30px;
+}
+
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:16px;
+}
+
+.card h2{
+    font-size:18px;
+    color:#94a3b8;
+    margin-bottom:10px;
+}
+
+.card p{
+    font-size:28px;
+    font-weight:bold;
+}
+
+.balance{
+    color:#38bdf8;
+}
+
+.income{
+    color:#22c55e;
+}
+
+.expense{
+    color:#ef4444;
+}
+
+button{
+    background:#3b82f6;
+    color:white;
+    border:none;
+    padding:12px 20px;
+    border-radius:10px;
+    cursor:pointer;
+    margin-bottom:20px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:#1e293b;
+}
+
+th,td{
+    padding:14px;
+    text-align:left;
+}
+
+th{
+    background:#334155;
+}
+
+tr:nth-child(even){
+    background:#273549;
+}
+</style>
+
+<script>
+
+let data =
+JSON.parse(
+localStorage.getItem("budget")
+) || [];
+
+function save(){
+
+localStorage.setItem(
+"budget",
+JSON.stringify(data)
+);
+
+}
+
+function updateDashboard(){
+
+let income=0;
+let expense=0;
+
+data.forEach(item=>{
+
+if(item.type==="income")
+income+=item.amount;
+
+else
+expense+=item.amount;
+
+});
+
+document.getElementById("income").textContent =
+"$"+income;
+
+document.getElementById("expense").textContent =
+"$"+expense;
+
+document.getElementById("balance").textContent =
+"$"+(income-expense);
+
+}
+
+function render(){
+
+const tbody =
+document.getElementById("transactions");
+
+tbody.innerHTML="";
+
+data.slice().reverse().forEach(item=>{
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${item.title}</td>
+
+<td class="${item.type}">
+${item.type}
+</td>
+
+<td class="${item.type}">
+${item.type==="income"?"+":"-"}$${item.amount}
+</td>
+
+</tr>
+
+`;
+
+});
+
+updateDashboard();
+
+}
+
+function addTransaction(){
+
+const title=
+prompt("Title");
+
+if(!title) return;
+
+const type=
+prompt("income / expense");
+
+const amount=
+Number(prompt("Amount"));
+
+data.push({
+title,
+type,
+amount
+});
+
+save();
+
+render();
+
+}
+
+render();
+
+</script>
