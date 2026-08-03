@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Budget Tracker - Episode 9</title>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Budget Tracker</h1>
+
+<div class="controls">
+
+<input
+id="title"
+placeholder="Title">
+
+<input
+id="amount"
+type="number"
+placeholder="Amount">
+
+<select id="type">
+<option value="income">Income</option>
+<option value="expense">Expense</option>
+</select>
+
+<select id="category"></select>
+
+<button onclick="addTransaction()">
+Add Transaction
+</button>
+
+</div>
+
+<div class="controls">
+
+<input
+id="newCategory"
+placeholder="New Category">
+
+<button onclick="addCategory()">
+Add Category
+</button>
+
+</div>
+
+<table>
+
+<thead>
+
+<tr>
+<th>Title</th>
+<th>Category</th>
+<th>Type</th>
+<th>Amount</th>
+</tr>
+
+</thead>
+
+<tbody id="transactions"></tbody>
+
+</table>
+
+<div class="summary">
+
+<h2>Category Summary</h2>
+
+<div id="summary"></div>
+
+</div>
+
+</div>
+</body>
+</html>
+
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial,sans-serif;
+}
+
+body{
+background:#0f172a;
+color:white;
+padding:40px;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+}
+
+h1{
+margin-bottom:25px;
+}
+
+.controls{
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-bottom:20px;
+}
+
+input,select,button{
+padding:10px;
+border:none;
+border-radius:8px;
+}
+
+input,select{
+background:#1e293b;
+color:white;
+}
+
+button{
+background:#2563eb;
+color:white;
+cursor:pointer;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:25px;
+background:#1e293b;
+}
+
+th,td{
+padding:14px;
+text-align:left;
+}
+
+th{
+background:#334155;
+}
+
+.summary{
+margin-top:30px;
+background:#1e293b;
+padding:20px;
+border-radius:10px;
+}
+
+.summary h2{
+margin-bottom:15px;
+}
+
+.summary-item{
+padding:10px 0;
+border-bottom:1px solid #334155;
+}
+
+.income{
+color:#22c55e;
+font-weight:bold;
+}
+
+.expense{
+color:#ef4444;
+font-weight:bold;
+}
+
+</style>
+
+<script>
+
+let categories =
+JSON.parse(
+localStorage.getItem("categories")
+) ||
+["Food","Transport","Shopping","Salary"];
+
+let transactions =
+JSON.parse(
+localStorage.getItem("transactions")
+) ||
+[];
+
+function save(){
+
+localStorage.setItem(
+"categories",
+JSON.stringify(categories)
+);
+
+localStorage.setItem(
+"transactions",
+JSON.stringify(transactions)
+);
+
+}
+
+function loadCategories(){
+
+const select =
+document.getElementById("category");
+
+select.innerHTML="";
+
+categories.forEach(category=>{
+
+select.innerHTML+=
+`<option>${category}</option>`;
+
+});
+
+}
+
+function addCategory(){
+
+const input =
+document.getElementById("newCategory");
+
+const value =
+input.value.trim();
+
+if(!value) return;
+
+if(categories.includes(value)){
+
+alert("Category already exists.");
+
+return;
+
+}
+
+categories.push(value);
+
+input.value="";
+
+save();
+
+loadCategories();
+
+}
+
+function addTransaction(){
+
+const title =
+document.getElementById("title").value;
+
+const amount =
+Number(
+document.getElementById("amount").value
+);
+
+const type =
+document.getElementById("type").value;
+
+const category =
+document.getElementById("category").value;
+
+if(!title || amount<=0){
+
+alert("Enter valid data");
+
+return;
+
+}
+
+transactions.push({
+
+title,
+amount,
+type,
+category
+
+});
+
+save();
+
+render();
+
+document.getElementById("title").value="";
+document.getElementById("amount").value="";
+
+}
+
+function render(){
+
+const tbody =
+document.getElementById("transactions");
+
+tbody.innerHTML="";
+
+const summary={};
+
+transactions.forEach(item=>{
+
+tbody.innerHTML+=`
+
+<tr>
+
+<td>${item.title}</td>
+
+<td>${item.category}</td>
+
+<td class="${item.type}">
+${item.type}
+</td>
+
+<td class="${item.type}">
+$${item.amount}
+</td>
+
+</tr>
+
+`;
+
+if(!summary[item.category]){
+
+summary[item.category]={
+income:0,
+expense:0
+};
+
+}
+
+if(item.type==="income")
+summary[item.category].income+=item.amount;
+
+else
+summary[item.category].expense+=item.amount;
+
+});
+
+const summaryDiv =
+document.getElementById("summary");
+
+summaryDiv.innerHTML="";
+
+for(let category in summary){
+
+summaryDiv.innerHTML+=`
+
+<div class="summary-item">
+
+<strong>${category}</strong>
+
+<br>
+
+Income:
+<span class="income">
+
+$${summary[category].income}
+
+</span>
+
+&nbsp;&nbsp;
+
+Expense:
+<span class="expense">
+
+$${summary[category].expense}
+
+</span>
+
+</div>
+
+`;
+
+}
+
+}
+
+loadCategories();
+
+render();
+
+</script>
