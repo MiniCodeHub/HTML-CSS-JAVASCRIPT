@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Budget Tracker - Episode 12</title>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Budget Tracker</h1>
+
+
+    <!-- Statistics -->
+
+    <div class="stats">
+
+        <div class="stat">
+            <p>Total Income</p>
+            <h2
+                id="totalIncome"
+                class="income">
+                ₹0
+            </h2>
+        </div>
+
+        <div class="stat">
+            <p>Total Expense</p>
+            <h2
+                id="totalExpense"
+                class="expense">
+                ₹0
+            </h2>
+        </div>
+
+        <div class="stat">
+            <p>Balance</p>
+            <h2
+                id="balance"
+                class="balance">
+                ₹0
+            </h2>
+        </div>
+
+    </div>
+
+
+    <!-- Transaction Form -->
+
+    <div class="card">
+
+        <h2 id="formTitle">
+            Add Transaction
+        </h2>
+
+        <br>
+
+        <div class="form">
+
+            <input
+                id="title"
+                placeholder="Transaction title"
+            >
+
+            <input
+                id="amount"
+                type="number"
+                placeholder="Amount"
+            >
+
+            <select id="type">
+
+                <option value="Income">
+                    Income
+                </option>
+
+                <option value="Expense">
+                    Expense
+                </option>
+
+            </select>
+
+            <input
+                id="category"
+                placeholder="Category"
+            >
+
+        </div>
+
+        <br>
+
+        <button
+            class="add-btn"
+            id="submitBtn"
+            onclick="saveTransaction()">
+
+            Add Transaction
+
+        </button>
+
+        <button
+            class="cancel-btn"
+            id="cancelBtn"
+            onclick="cancelEdit()"
+            style="display:none">
+
+            Cancel
+
+        </button>
+
+    </div>
+
+
+    <!-- Transactions -->
+
+    <div class="card">
+
+        <h2>Transactions</h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Actions</th>
+                </tr>
+
+            </thead>
+
+            <tbody id="transactionList"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+</body>
+
+</html>
+
+<style>
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+    body {
+        background: #0f172a;
+        color: white;
+        padding: 30px;
+    }
+    .container {
+        max-width: 1100px;
+        margin: auto;
+    }
+    h1 {
+        margin-bottom: 25px;
+    }
+    .card {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    .form {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+    }
+    input,
+    select,
+    button {
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        font-size: 15px;
+    }
+    input,
+    select {
+        background: #334155;
+        color: white;
+    }
+    button {
+        cursor: pointer;
+        color: white;
+    }
+    .add-btn {
+        background: #16a34a;
+    }
+    .edit-btn {
+        background: #2563eb;
+        padding: 8px 12px;
+    }
+    .delete-btn {
+        background: #dc2626;
+        padding: 8px 12px;
+    }
+    .cancel-btn {
+        background: #64748b;
+        padding: 8px 12px;
+    }
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+    .stat {
+        background: #1e293b;
+        padding: 20px;
+        border-radius: 12px;
+    }
+    .stat p {
+        color: #94a3b8;
+        margin-bottom: 8px;
+    }
+    .stat h2 {
+        font-size: 26px;
+    }
+    .income {
+        color: #22c55e;
+    }
+    .expense {
+        color: #ef4444;
+    }
+    .balance {
+        color: #38bdf8;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+    th,
+    td {
+        padding: 14px;
+        text-align: left;
+        border-bottom: 1px solid #334155;
+    }
+    th {
+        color: #94a3b8;
+    }
+    .actions {
+        display: flex;
+        gap: 8px;
+    }
+    .empty {
+        text-align: center;
+        color: #94a3b8;
+        padding: 25px;
+    }
+    @media (max-width: 800px) {
+        .form {
+            grid-template-columns: 1fr;
+        }
+        .stats {
+            grid-template-columns: 1fr;
+        }
+        table {
+            display: block;
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<script>
+
+let transactions =
+    JSON.parse(
+        localStorage.getItem("transactions")
+    ) || [];
+
+let editingId = null;
+
+
+/* =========================
+   SAVE TO LOCAL STORAGE
+========================= */
+
+function saveToStorage() {
+
+    localStorage.setItem(
+        "transactions",
+        JSON.stringify(transactions)
+    );
+
+}
+
+
+/* =========================
+   SAVE / UPDATE TRANSACTION
+========================= */
+
+function saveTransaction() {
+
+    const title =
+        document
+            .getElementById("title")
+            .value
+            .trim();
+
+    const amount =
+        Number(
+            document
+                .getElementById("amount")
+                .value
+        );
+
+    const type =
+        document
+            .getElementById("type")
+            .value;
+
+    const category =
+        document
+            .getElementById("category")
+            .value
+            .trim();
+
+
+    if (!title || amount <= 0 || !category) {
+
+        alert(
+            "Please enter valid transaction details."
+        );
+
+        return;
+
+    }
+
+
+    /* EDIT */
+
+    if (editingId !== null) {
+
+        transactions =
+            transactions.map(transaction => {
+
+                if (transaction.id === editingId) {
+
+                    return {
+                        ...transaction,
+                        title,
+                        amount,
+                        type,
+                        category
+                    };
+
+                }
+
+                return transaction;
+
+            });
+
+        editingId = null;
+
+        document
+            .getElementById("formTitle")
+            .textContent =
+            "Add Transaction";
+
+        document
+            .getElementById("submitBtn")
+            .textContent =
+            "Add Transaction";
+
+        document
+            .getElementById("cancelBtn")
+            .style.display =
+            "none";
+
+    }
+
+    /* ADD */
+
+    else {
+
+        transactions.push({
+
+            id: Date.now(),
+
+            title,
+
+            amount,
+
+            type,
+
+            category
+
+        });
+
+    }
+
+
+    saveToStorage();
+
+    clearForm();
+
+    render();
+
+}
+
+
+/* =========================
+   EDIT TRANSACTION
+========================= */
+
+function editTransaction(id) {
+
+    const transaction =
+        transactions.find(
+            item => item.id === id
+        );
+
+    if (!transaction) {
+        return;
+    }
+
+
+    document
+        .getElementById("title")
+        .value =
+        transaction.title;
+
+    document
+        .getElementById("amount")
+        .value =
+        transaction.amount;
+
+    document
+        .getElementById("type")
+        .value =
+        transaction.type;
+
+    document
+        .getElementById("category")
+        .value =
+        transaction.category;
+
+
+    editingId = id;
+
+
+    document
+        .getElementById("formTitle")
+        .textContent =
+        "Edit Transaction";
+
+    document
+        .getElementById("submitBtn")
+        .textContent =
+        "Update Transaction";
+
+    document
+        .getElementById("cancelBtn")
+        .style.display =
+        "inline-block";
+
+
+    window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+    });
+
+}
+
+
+/* =========================
+   DELETE TRANSACTION
+========================= */
+
+function deleteTransaction(id) {
+
+    const transaction =
+        transactions.find(
+            item => item.id === id
+        );
+
+    if (!transaction) {
+        return;
+    }
+
+
+    const confirmed =
+        confirm(
+            `Delete "${transaction.title}"?`
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    transactions =
+        transactions.filter(
+            item => item.id !== id
+        );
+
+
+    saveToStorage();
+
+    render();
+
+}
+
+
+/* =========================
+   CANCEL EDIT
+========================= */
+
+function cancelEdit() {
+
+    editingId = null;
+
+    clearForm();
+
+    document
+        .getElementById("formTitle")
+        .textContent =
+        "Add Transaction";
+
+    document
+        .getElementById("submitBtn")
+        .textContent =
+        "Add Transaction";
+
+    document
+        .getElementById("cancelBtn")
+        .style.display =
+        "none";
+
+}
+
+
+/* =========================
+   CLEAR FORM
+========================= */
+
+function clearForm() {
+
+    document
+        .getElementById("title")
+        .value = "";
+
+    document
+        .getElementById("amount")
+        .value = "";
+
+    document
+        .getElementById("category")
+        .value = "";
+
+    document
+        .getElementById("type")
+        .value =
+        "Income";
+
+}
+
+
+/* =========================
+   CALCULATE STATISTICS
+========================= */
+
+function calculateStats() {
+
+    let income = 0;
+    let expense = 0;
+
+
+    transactions.forEach(
+        transaction => {
+
+            if (
+                transaction.type ===
+                "Income"
+            ) {
+
+                income +=
+                    Number(transaction.amount);
+
+            } else {
+
+                expense +=
+                    Number(transaction.amount);
+
+            }
+
+        }
+    );
+
+
+    document
+        .getElementById("totalIncome")
+        .textContent =
+        `₹${income.toLocaleString()}`;
+
+    document
+        .getElementById("totalExpense")
+        .textContent =
+        `₹${expense.toLocaleString()}`;
+
+    document
+        .getElementById("balance")
+        .textContent =
+        `₹${(
+            income - expense
+        ).toLocaleString()}`;
+
+}
+
+
+/* =========================
+   RENDER TRANSACTIONS
+========================= */
+
+function render() {
+
+    const list =
+        document
+            .getElementById(
+                "transactionList"
+            );
+
+    list.innerHTML = "";
+
+
+    if (transactions.length === 0) {
+
+        list.innerHTML = `
+            <tr>
+                <td
+                    colspan="5"
+                    class="empty">
+
+                    No transactions found.
+
+                </td>
+            </tr>
+        `;
+
+        calculateStats();
+
+        return;
+
+    }
+
+
+    transactions.forEach(
+        transaction => {
+
+            const row =
+                document.createElement("tr");
+
+
+            const amountClass =
+                transaction.type ===
+                "Income"
+                    ? "income"
+                    : "expense";
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${transaction.title}
+                </td>
+
+                <td>
+                    ${transaction.category}
+                </td>
+
+                <td>
+                    ${transaction.type}
+                </td>
+
+                <td class="${amountClass}">
+                    ₹${Number(
+                        transaction.amount
+                    ).toLocaleString()}
+                </td>
+
+                <td>
+
+                    <div class="actions">
+
+                        <button
+                            class="edit-btn"
+                            onclick="editTransaction(
+                                ${transaction.id}
+                            )">
+
+                            Edit
+
+                        </button>
+
+                        <button
+                            class="delete-btn"
+                            onclick="deleteTransaction(
+                                ${transaction.id}
+                            )">
+
+                            Delete
+
+                        </button>
+
+                    </div>
+
+                </td>
+
+            `;
+
+
+            list.appendChild(row);
+
+        }
+    );
+
+
+    calculateStats();
+
+}
+
+
+/* =========================
+   INITIALIZE
+========================= */
+
+render();
+
+</script>
